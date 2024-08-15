@@ -80,7 +80,11 @@ export const ModalFormComponent = ({
             empreendimento: IdEmpreedimento,
             tag: "info",
             texto: Descricao,
-            titulo: `${Empreedimeto.filter((e: any) => e.id === IdEmpreedimento).map((e: any) => e.nome)[0]} - ${Titulo}`
+            titulo: `${
+              Empreedimeto.filter((e: any) => e.id === IdEmpreedimento).map(
+                (e: any) => e.nome
+              )[0]
+            } - ${Titulo}`,
           }
         : {
             tipo: "CORRETOR",
@@ -93,7 +97,7 @@ export const ModalFormComponent = ({
               PostName?.split(" ")[1]
             } - ${Titulo}`,
           };
-console.log(data)
+    console.log(data);
     try {
       const request = await fetch(`/api/alerts/create`, {
         method: "POST",
@@ -129,7 +133,6 @@ console.log(data)
   return (
     <>
       <Box
-        w={"100%"}
         h={"100%"}
         borderRadius={"15px"}
         display={"flex"}
@@ -137,12 +140,12 @@ console.log(data)
         alignItems={"center"}
         gap={"20px"}
       >
-       <Button
+        <Button
           bg={"#00713D"}
           textColor={"white"}
           variant="solid"
           _hover={{ bg: "#00631B" }}
-          size="lg"
+          size="md"
           onClick={onOpen}
         >
           CRIAR ALERTA
@@ -164,12 +167,12 @@ console.log(data)
               <FormLabel>Status</FormLabel>
               <Select
                 name="status"
-                value={rota === "geral"? "info":StatusAlert}
+                value={rota === "geral" ? "info" : StatusAlert}
                 disabled={rota === "geral" ? true : false}
                 onChange={(e) => setStatusAlert(e.target.value)}
                 placeholder="Selecione o status"
               >
-                <option value="info">Informação</option>
+                {rota == "geral" && <option value="info">Informação</option>}
                 <option value="warning">Atenção</option>
                 <option value="error">Erro</option>
               </Select>

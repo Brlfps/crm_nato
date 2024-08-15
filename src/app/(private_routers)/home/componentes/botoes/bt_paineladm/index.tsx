@@ -1,6 +1,8 @@
 "use client";
 import { Flex, Box, Button } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import { AiFillProduct } from "react-icons/ai";
+import { MdOutlineAdminPanelSettings } from "react-icons/md";
 
 export default function BotaoPainelAdm() {
   const router = useRouter();
@@ -17,11 +19,10 @@ export default function BotaoPainelAdm() {
         gap={"20px"}
       >
         <Button
-          bg={"#00713D"}
           textColor={"white"}
-          variant="solid"
-          _hover={{ bg: "#00631B" }}
-          size="lg"
+          variant="link"
+          size="sm"
+          leftIcon={<AiFillProduct />}
           onClick={() => router.push("/adm")}
         >
           PAINEL ADM

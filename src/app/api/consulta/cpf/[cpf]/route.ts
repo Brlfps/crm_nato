@@ -2,7 +2,10 @@ import { auth } from "@/lib/auth_confg";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-export async function GET( reqest: Request, { params }: { params: { cpf: string } } ) {
+export async function GET(
+  request: Request,
+  { params }: { params: { cpf: string } }
+) {
   try {
     const { cpf } = params;
     const session = await getServerSession(auth);
@@ -11,24 +14,40 @@ export async function GET( reqest: Request, { params }: { params: { cpf: string 
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const reqest = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresa`,
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/solicitacao/filter/doc/${cpf}`,
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.token}`
-        }
+          Authorization: `Bearer ${session?.token}`,
+        },
       }
     );
 
-    if (!reqest.ok) {
+    if (!response.ok) {
       return new NextResponse("Invalid credentials", { status: 401 });
     }
-    const data = await reqest.json();
 
-    return NextResponse.json(data, { status: 200 });
+    const data = await response.json();
+    console.log(data);
+    // Verifique se o CPF existe nas solicitações
+    const solicitacoes = data.filter(
+      (solicitacao: any) => solicitacao.cpf === cpf
+    );
+
+    if (solicitacoes.length === 0) {
+      return NextResponse.json(
+        { exists: false, solicitacoes: [] },
+        { status: 200 }
+      );
+    } else {
+      return NextResponse.json(
+        { exists: true, solicitacoes: solicitacoes },
+        { status: 200 }
+      );
+    }
   } catch (error: any) {
-    return NextResponse.json({ error: error }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

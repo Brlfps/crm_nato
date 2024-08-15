@@ -58,8 +58,8 @@ export default function FormRegister() {
       !username ||
       !Email ||
       !Nome ||
-      !Empreendimento ||
-      !Construtora ||
+      // !Empreendimento ||
+      // !Construtora ||
       !password ||
       !confirmPassword
     ) {
@@ -90,6 +90,7 @@ export default function FormRegister() {
         construtora: Construtora ? [Number(Construtora)] : [],
         empreendimento: Empreendimento ? [Number(Empreendimento)] : [],
         hierarquia: Hierarquia,
+        obs: "",
       };
       try {
         const response = await fetch("/api/register", {
@@ -144,49 +145,43 @@ export default function FormRegister() {
   };
 
   return (
-
     <>
-      <Box
-        display="flex"
-        flexDirection={{ base: "column", md: "row" }}
-        justifyContent="space-between"
-        w="full"
+      <SimpleGrid
+        columns={{ base: 1, md: 2, lg: 2 }}
+        spacing={6}
+        mt={6}
+        alignItems={"end"}
       >
-      
-        <Box w={{ base: "100%", md: "48%" }} mb={{ base: 4, md: 0 }}>
+        <GridItem>
           <FormLabel>Nome Completo</FormLabel>
           <Input
             type="text"
             border="1px solid #b8b8b8cc"
             onChange={(e: any) => setNome(e.target.value)}
           />
-        </Box>
-
-        <Box>
-          <FormLabel>Nome Completo</FormLabel>
-          <Input type="text" onChange={(e) => setNome(e.target.value)} />
-        </Box>
-        <Box>
-          <FormLabel>Usuario</FormLabel>
+        </GridItem>
+        <GridItem>
+          <FormLabel>CPF</FormLabel>
           <Input
             type="text"
             border="1px solid #b8b8b8cc"
-            onChange={(e: any) => setUsername(e.target.value)}
+            onChange={(e: any) => setCpf(e.target.value)}
           />
-        </Box>
+        </GridItem>
       </SimpleGrid>
 
       <SimpleGrid
-        columns={{ base: 1, md: 2, lg: 3 }}
+        columns={{ base: 1, md: 2, lg: 2 }}
         spacing={6}
         mt={6}
         alignItems={"end"}
       >
         <GridItem>
-          <FormLabel>Data de Nascimento</FormLabel>
+          <FormLabel>Usuario</FormLabel>
           <Input
-            type="date"
-            onChange={(e) => setDataNascimento(e.target.value)}
+            type="text"
+            border="1px solid #b8b8b8cc"
+            onChange={(e: any) => setUsername(e.target.value)}
           />
         </GridItem>
         <GridItem>
@@ -283,7 +278,7 @@ export default function FormRegister() {
             <option value="vendedor">Vendedor</option>
             <option value="construtor">Construtor</option>
             <option value="gerente">Gerente</option>
-            <option value="financeiro">Finaceiro</option>
+            <option value="financeiro">Financeiro</option>
             <option value="admin">Admin</option>
           </Select>
         </Box>
@@ -337,6 +332,6 @@ export default function FormRegister() {
       >
         CRIAR CONTA
       </Button>
-    </Stack>
+    </>
   );
 }

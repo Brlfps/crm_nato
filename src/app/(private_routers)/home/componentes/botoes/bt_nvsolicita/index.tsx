@@ -2,6 +2,7 @@
 
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import { SiGoogleforms } from "react-icons/si";
 
 export default function BotaoNovaSolicita() {
   const router = useRouter();
@@ -11,9 +12,8 @@ export default function BotaoNovaSolicita() {
   };
 
   return (
-    <Flex w={"100%"}>
+    <Flex>
       <Box
-        w={"100%"}
         h={"100%"}
         borderRadius={"15px"}
         display={"flex"}
@@ -22,11 +22,10 @@ export default function BotaoNovaSolicita() {
         gap={"20px"}
       >
         <Button
-          bg={"#00713D"}
           textColor={"white"}
-          variant="solid"
-          _hover={{ bg: "#00631B" }}
-          size="lg"
+          variant="link"
+          size="sm"
+          leftIcon={<SiGoogleforms />}
           onClick={handleClick}
         >
           NOVA SOLICITAÇÃO

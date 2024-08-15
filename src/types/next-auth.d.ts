@@ -5,6 +5,7 @@ declare module 'next-auth' {
     token: string;
     expires: Date | string;
     user: {
+      Financeira: any;
       id: number;
       name: string;
       email: string;

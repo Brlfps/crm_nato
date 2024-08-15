@@ -26,6 +26,7 @@ export const auth: NextAuthOptions = {
           });
 
           const retorno = await res.json();
+          console.log("🚀 ~ authorize ~ retorno:", retorno)
           const { token, expires, user } = retorno;
 
           const {
@@ -39,7 +40,8 @@ export const auth: NextAuthOptions = {
             empreendimento,
             hierarquia,
             cargo,
-            reset_password
+            reset_password,
+            Financeira
           } = await user;
 
           const response = {
@@ -55,7 +57,8 @@ export const auth: NextAuthOptions = {
             hierarquia: hierarquia,
             cargo: cargo,
             tokenexpires: expires,
-            reset_password: reset_password
+            reset_password: reset_password,
+            Financeira: Financeira 
           };
 
           if (!token || !id || !username) {
@@ -114,6 +117,7 @@ export const auth: NextAuthOptions = {
         token.hierarquia = user.hierarquia;
         token.cargo = user.cargo;
         token.reset_password = user.reset_password;
+        token.Financeira = user.Financeira;
 
         token.expiration = actualDateInSeconds + tokenExpirationInSeconds;
       } else {
@@ -152,7 +156,8 @@ export const auth: NextAuthOptions = {
         empreendimento: token.empreendimento as any[],
         hierarquia: token.hierarquia as string,
         cargo: token.cargo as string,
-        reset_password: token.reset_password as boolean
+        reset_password: token.reset_password as boolean,
+        Financeira: token.Financeira as any[]
       };
 
       session.token = token.jwt as string;

@@ -6,9 +6,8 @@ export default function BotaoCadastro() {
   const router = useRouter();
 
   return (
-    <Flex w={"100%"}>
+    <Flex>
       <Box
-        w={"100%"}
         h={"100%"}
         borderRadius={"15px"}
         display={"flex"}
@@ -21,10 +20,10 @@ export default function BotaoCadastro() {
           textColor={"white"}
           variant="solid"
           _hover={{ bg: "#00631B" }}
-          size="lg"
+          size="md"
           onClick={() => router.push("/register")}
         >
-          CADASTRAR
+          CADASTRAR USERS
         </Button>
       </Box>
     </Flex>

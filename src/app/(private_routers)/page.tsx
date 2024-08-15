@@ -5,7 +5,7 @@ import { ModalPrimeAsses } from "@/app/componentes/prime_asses";
 import { FiltroComponent } from "./home/componentes/filter/filtro_geral";
 import PerfilHome from "./home/componentes/perfil_home";
 import { Tabela } from "./home/componentes/tabela";
-import BotaoJuncao from "./home/componentes/botoes/bt_juncao";
+
 
 export default function HomePage() {
   const [Data, setData] = useState<any>([]);
@@ -33,9 +33,6 @@ export default function HomePage() {
         justifyContent="space-between"
       >
         <Stack spacing={4} w="100%" bg="#F8F8F8" padding="10px">
-          <Box>
-            <BotaoJuncao />
-          </Box>
           <Box justifyContent="center" alignItems="center">
             <PerfilHome />
           </Box>

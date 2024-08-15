@@ -4,14 +4,19 @@ import { Button } from "@chakra-ui/react";
 interface DownloadDocProps {
   base64: string;
   name: string;
+  clienteName: string;
 }
 
-export const DownloadDoc = ({ base64, name }: DownloadDocProps) => {
+export const DownloadDoc = ({
+  base64,
+  name,
+  clienteName,
+}: DownloadDocProps) => {
   const handleDownload = () => {
     if (base64) {
       const link = document.createElement("a");
       link.href = base64;
-      link.download = name;
+      link.download = clienteName + "_" + name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

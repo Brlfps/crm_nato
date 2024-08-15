@@ -16,6 +16,8 @@ import { useSession } from "next-auth/react";
 import { ModalFormComponent } from "@/app/componentes/modal";
 import { IoChevronDownCircleOutline } from "react-icons/io5";
 import BotaoPainelAdm from "../bt_paineladm";
+import BotaoUser from "../bt_user";
+import BotaoHome from "../bt_home";
 
 export default function BotaoJuncao() {
   const { data: session } = useSession();
@@ -23,13 +25,26 @@ export default function BotaoJuncao() {
   const [isLargerThanTablet] = useMediaQuery("(min-width: 768px)");
 
   return (
-    <Flex w={"100%"}>
-      <Box h={"100%"} borderRadius={"15px"} display={"flex"} gap={"20px"}>
+    <Flex
+      pt={"20px"}
+      pb={"20px"}
+      justifyContent={"space-evenly"}
+      alignItems={"center"}
+      w={"100%"}
+      bg={"#00713D"}
+    >
+      <Box
+        alignItems={"center"}
+        justifyContent={"flex-end"}
+        borderRadius={"15px"}
+        display={"flex"}
+        gap={"20px"}
+      >
         {isLargerThanTablet ? (
           <>
+            <BotaoHome />
             <BotaoNovaSolicita />
             {but === "ADM" && <BotaoPainelAdm />}
-            <BotaoSair />
           </>
         ) : (
           <Menu>
@@ -51,6 +66,10 @@ export default function BotaoJuncao() {
             </MenuList>
           </Menu>
         )}
+      </Box>
+      <Box display={"flex"}>
+        {but === "ADM" && <BotaoUser />}
+        <BotaoSair />
       </Box>
     </Flex>
   );

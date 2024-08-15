@@ -36,19 +36,16 @@ export default async function perfilPage({
   const data = await Requestes(id);
 
   return (
-    <>
-      <Flex
-        alignItems="center"
-        justifyContent="space-evenly"
-        pt={10}
-        pb={10}
-        borderWidth={0}
-        overflowX="auto"
-        flexDir={"column"}
-        h={"100vh"}
-      >
-        <DadosPessoaisComponent SetData={data} />
-      </Flex>
-    </>
+    <Flex
+      alignItems={{ base: "center", md: "start" }}
+      justifyContent={{ base: "center", md: "space-evenly" }}
+      pt={{ base: 5, md: 10 }}
+      pb={{ base: 5, md: 10 }}
+      borderWidth={{ base: 0, md: 1 }}
+      overflowX="auto"
+      flexDir={{ base: "column", md: "row" }}
+    >
+      <DadosPessoaisComponent SetData={data} />
+    </Flex>
   );
 }

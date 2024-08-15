@@ -18,6 +18,7 @@ import {
   Input,
   InputGroup,
   InputLeftAddon,
+  InputRightElement,
   Select,
   SimpleGrid,
   Stack,
@@ -41,6 +42,7 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
   const [cpfdois, setCpfdois] = useState("");
   const [cpfdoismask, setCpfdoismask] = useState("");
   const [ConstrutoraID, setConstrutoraID] = useState(0);
+  const [FinanceiraID, setFinanceiraID] = useState(0);
   const [empreendimento, setempreendimento] = useState(0);
   const [email, setemail] = useState("");
   const [uploadCnh, setCnhFile] = useState<string>("");
@@ -104,10 +106,11 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
         construtora: SetValue.construtora,
         empreedimento: SetValue.empreedimento,
         dt_nascimento: SetValue.dt_nascimento,
-        relacionamento: SetValue.relacionamento ,
+        relacionamento: SetValue.relacionamento,
         rela_quest: SetValue.rela_quest,
         voucher: SetValue.voucher,
-      }
+        Financeira: 0
+      };
       const dados: solictacao.SolicitacaoPost = {
         nome: nome,
         telefone: tel,
@@ -123,6 +126,7 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
         relacionamento: SetValue.cpf ? [SetValue.cpf] : [],
         rela_quest: SetValue.rela_quest ? true : false,
         voucher: Voucher,
+        Financeira: 0
       };
 
       const data = [dados, dadossuperior];
@@ -157,15 +161,32 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
   if (user?.construtora.length === 1 && !ConstrutoraID) {
     setConstrutoraID(user.construtora[0].id);
   }
+  if (user?.Financeira?.length === 1 && !FinanceiraID) {
+    setFinanceiraID(user.Financeira[0].id);
+  }
 
   const VerificadorEmail = (e: any) => {
     const value = e.target.value;
     if ("NT-" + value === checkEmail) {
       setcheckEmail("");
       setcodigo(true);
+      toast({
+        title: "Sucesso",
+        description: "Email verificado com sucesso",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
     } else {
       setcheckEmail(value);
       setcodigo(false);
+      toast({
+        title: "Erro",
+        description: "Falha na verificação de Email",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -173,14 +194,33 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
     return <Loading />;
   }
 
+  const WhatsAppMask = (e: any) => {
+    const valor = e.target.value;
+    const valorLinpo = unMask(valor);
+    const masked = mask(valorLinpo, ["(99) 9999-9999", "(99) 9 9999-9999"]);
+    SetTeldois(unMask(masked));
+    setWhatappdois(masked);
+  };
+
   return (
     <Stack spacing={4} p={4} maxWidth="900px" mx="auto">
       <SimpleGrid columns={{ base: 1, md: 2, lg: 2 }} spacing={6}>
         <Box>
+          <FormLabel>CPF</FormLabel>
+          <CpfMask desativado setvalue={cpfdois} onvalue={setCpf} />
+        </Box>
+        <Box>
           <FormLabel>Nome Completo</FormLabel>
           <Input type="text" onChange={(e) => setnome(e.target.value)} />
         </Box>
+      </SimpleGrid>
 
+      <SimpleGrid
+        columns={{ base: 1, md: 3, lg: 3 }}
+        spacing={6}
+        mt={6}
+        alignItems={"end"}
+      >
         <Box>
           <FormLabel>Data de Nascimento</FormLabel>
           <Input
@@ -188,73 +228,78 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
             onChange={(e) => setDataNascimento(e.target.value)}
           />
         </Box>
-      </SimpleGrid>
-
-      <SimpleGrid
-        columns={{ base: 1, md: 2, lg: 4 }}
-        spacing={6}
-        mt={6}
-        alignItems={"end"}
-      >
         <GridItem>
           <FormLabel>Whatsapp com DDD</FormLabel>
           <Whatsapp setValue={tel} onValue={setTel} />
         </GridItem>
         <GridItem>
           <FormLabel>Whatsapp com DDD 2</FormLabel>
-          <Whatsapp setValue={teldois} onValue={SetTeldois} />
+          <Input type="text" onChange={WhatsAppMask} value={Whatappdois} />
         </GridItem>
-
-        <GridItem>
+      </SimpleGrid>
+      <SimpleGrid
+        columns={{ base: 1, md: 2, lg: 3 }}
+        spacing={6}
+        mt={6}
+        alignItems={"end"}
+      >
+        <GridItem colSpan={2}>
           <FormLabel>Email</FormLabel>
-          <Input
-            type="text"
-            onChange={(e) => setemail(e.target.value.replace(/\s/g, ""))}
-            value={email}
-          />
-        </GridItem>
-
-        <GridItem>
-          <CheckEmail onvalue={setcheckEmail} email={email} nome={nome} />
-        </GridItem>
-
-        <GridItem>
-          <FormLabel>Codigo</FormLabel>
           <InputGroup>
-            <InputLeftAddon>NT-</InputLeftAddon>
-            <Input type="text" onChange={VerificadorEmail} />
+            <Input
+              type="text"
+              border="1px solid #b8b8b8cc"
+              onChange={(e: any) => setemail(e.target.value)}
+            />
+            <InputRightElement width="8rem">
+              <CheckEmail
+                onvalue={(e: any) => setcheckEmail(e)}
+                email={email}
+                nome={nome}
+              />
+            </InputRightElement>
           </InputGroup>
         </GridItem>
 
-        {user?.hierarquia === "ADM" && (
+        <GridItem>
+          <FormLabel>Codigo email</FormLabel>
+          <InputGroup>
+            <InputLeftAddon>NT-</InputLeftAddon>
+            <Input
+              type="text"
+              onChange={VerificadorEmail}
+              textTransform={"uppercase"}
+            />
+          </InputGroup>
+        </GridItem>
+      </SimpleGrid>
+
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mt={6}>
+        {user?.construtora && (
           <Box>
-            <FormLabel>Corretor</FormLabel>
-            <SelectCorretor idcorretor={setCorretorId} />
+            <FormLabel>Construtora</FormLabel>
+            <SelectComponent
+              hierarquia={user.hierarquia}
+              tag="construtora"
+              SetValue={user.construtora.map((item: any) => ({
+                id: item.id,
+                nome: item.razaosocial,
+              }))}
+              onValue={(e: any) => setConstrutoraID(e)}
+            />
           </Box>
         )}
-
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} mt={6}>
-          {user?.hierarquia === "ADM" && (
-            <Box>
-              <FormLabel>
-                Voucher
-                <Tooltip
-                  label="Voucher para Atendimento em qualquer unidade Soluti"
-                  aria-label="A tooltip"
-                >
-                  <Icon ml={1} color="black" cursor="pointer" boxSize={3} />
-                </Tooltip>
-              </FormLabel>
-              <Input type="text" onChange={(e) => setVoucher(e.target.value)} />
-            </Box>
-          )}
-        </SimpleGrid>
-      </SimpleGrid>
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} mt={6}>
-        <Box>
-          <FormLabel>CPF</FormLabel>
-          <CpfMask desativado setvalue={cpfdois} onvalue={setCpf} />
-        </Box>
+        {user?.Financeira && (
+          <Box>
+            <FormLabel>Financeira</FormLabel>
+            <SelectComponent
+              hierarquia={user.hierarquia}
+              tag="Financeira"
+              SetValue={user.Financeira}
+              onValue={(e: any) => setFinanceiraID(e)}
+            />
+          </Box>
+        )}
         {user?.empreendimento && (
           <Box>
             <FormLabel>Empreendimento</FormLabel>
@@ -266,19 +311,10 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
             />
           </Box>
         )}
-
-        {user?.construtora && (
+        {user?.hierarquia === "ADM" && (
           <Box>
-            <FormLabel>Construtora</FormLabel>
-            <SelectComponent
-              hierarquia={user.hierarquia}
-              tag="construtora"
-              SetValue={user.construtora.map((item) => ({
-                id: item.id,
-                nome: item.razaosocial,
-              }))}
-              onValue={(e: any) => setConstrutoraID(e)}
-            />
+            <FormLabel>Corretor</FormLabel>
+            <SelectCorretor idcorretor={setCorretorId} />
           </Box>
         )}
       </SimpleGrid>
@@ -288,11 +324,24 @@ export default function RelacionadoForm({ SetValue }: RelacionadoProps) {
           <FormLabel>CNH</FormLabel>
           <VerificadorFileComponent onFileConverted={setCnhFile} />
         </FormControl>
-
         <FormControl as={GridItem}>
           <FormLabel>RG</FormLabel>
           <VerificadorFileComponent onFileConverted={setRgFile} />
         </FormControl>
+        {user?.hierarquia === "ADM" && (
+          <Box>
+            <FormLabel>
+              Voucher
+              <Tooltip
+                label="Voucher para Atendimento em qualquer unidade Soluti"
+                aria-label="A tooltip"
+              >
+                <Icon ml={1} color="black" cursor="pointer" boxSize={3} />
+              </Tooltip>
+            </FormLabel>
+            <Input type="text" onChange={(e) => setVoucher(e.target.value)} />
+          </Box>
+        )}{" "}
       </SimpleGrid>
 
       <Button

@@ -80,7 +80,7 @@ export default function Solicitacao() {
 
             <SolicitacaoForm
               onvalue={handleOnvalueChange}
-              ishidden={handleIshiddenChange} // Passa a função para atualizar isHidden
+              ishidden={handleIshiddenChange} 
             />
           </Box>
         </Stack>

@@ -4,6 +4,10 @@ import {
   Box,
   Button,
   Flex,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Stack,
   Text,
   useBreakpointValue,
@@ -14,8 +18,14 @@ import BotaoCadastro from "../home/componentes/botoes/bt_cadastro";
 import BotaoJuncao from "../home/componentes/botoes/bt_juncao";
 import BotaoNovaSolicita from "../home/componentes/botoes/bt_nvsolicita";
 import { ModalFormComponent } from "@/app/componentes/modal";
+import BotaoUser from "../home/componentes/botoes/bt_user";
+import BotaoCadastroemp from "../home/componentes/botoes/bt_cadastroemp";
+import BotaoCadastroconst from "../home/componentes/botoes/bt_cadastroconst";
+import { IoChevronDownCircleOutline } from "react-icons/io5";
 
 export default function PainelAdministrativo() {
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
   return (
     <Flex
       flexDir="column"
@@ -24,7 +34,7 @@ export default function PainelAdministrativo() {
       overflowY={"auto"}
       alignItems="center"
       py={10}
-      px={4} // Adicionei um padding lateral para melhorar o espaçamento em telas menores
+      px={4}
     >
       <Box
         border="3px solid #E8E8E8"
@@ -47,17 +57,32 @@ export default function PainelAdministrativo() {
           </Box>
         </Flex>
 
-        <Flex justifyContent="center" gap={10}>
+        {!isMobile ? (
           <Box>
-            <BotaoCadastro />
+            <Flex justifyContent={"space-between"} gap={10} p={5}>
+              <BotaoCadastro />
+              <BotaoCadastroemp />
+              <BotaoCadastroconst />
+            </Flex>
           </Box>
-          <Box>
-            <BotaoNovaSolicita />
-          </Box>
-          <Box>
-            <ModalFormComponent rota={"geral"} />
-          </Box>
-        </Flex>
+        ) : (
+          <Menu>
+            <MenuButton as={Button} rightIcon={<IoChevronDownCircleOutline />}>
+              Menu
+            </MenuButton>
+            <MenuList>
+              <MenuItem>
+                <BotaoCadastro />
+              </MenuItem>
+              <MenuItem>
+                <BotaoCadastroemp />
+              </MenuItem>
+              <MenuItem>
+                <BotaoCadastroconst />
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        )}
       </Box>
 
       <Box

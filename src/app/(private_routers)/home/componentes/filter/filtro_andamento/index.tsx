@@ -24,7 +24,7 @@ export const AndamentoFilter = ({ onAndamento, setBlank }: FiltroAndamentoProps)
       w={"100%"}
       justifyContent="start"
       alignItems="center"
-      gap="5px"
+      
       flexDirection={{ base: "column", md: "row" }} 
     >
       <Box

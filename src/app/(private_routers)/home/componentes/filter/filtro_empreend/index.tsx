@@ -42,7 +42,7 @@ export const EmpreendimentoFilter = ({
         w={"100%"}
         h={"100%"}
         bg={"#F8F8F8"}
-        pt={{ base: "10px", md: '0px' }}
+        
       >
         <Select
           textColor={"#00713D"}

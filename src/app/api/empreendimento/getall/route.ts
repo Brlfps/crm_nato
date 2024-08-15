@@ -21,10 +21,11 @@ export async function GET() {
       }
     );
 
+    const data = await reqest.json();
+    
     if (!reqest.ok) {
       return new NextResponse("Invalid credentials", { status: 401 });
     }
-    const data = await reqest.json();
     return NextResponse.json(data, { status: 200 });    
   } catch (error: any) {
     return NextResponse.json({ error: error }, { status: 500 });

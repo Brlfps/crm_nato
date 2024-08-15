@@ -19,7 +19,7 @@ export const NomeFilter = ({ onNome, setBlank }: FiltroNomeProps) => {
   }, [FilterNome, onNome, setBlank]);
 
   return (
-    <Flex w={"100%"} justifyContent={"start"} alignItems={"center"} gap={"5px"}>
+    <Flex w={"100%"} justifyContent={"start"} alignItems={"center"} >
       <Box w={"full"} h={"100%"} bg={"#F8F8F8"}>
         <Input
           textColor={"#00713D"}

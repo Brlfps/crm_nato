@@ -5,6 +5,7 @@ import { mask, unMask } from "remask";
 interface WhatsAppProps {
   onValue: any;
   setValue: string;
+  
 }
 
 export const Whatsapp = ({ onValue, setValue }: WhatsAppProps) => {

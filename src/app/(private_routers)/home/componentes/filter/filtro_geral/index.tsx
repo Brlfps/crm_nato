@@ -26,7 +26,6 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
   const user = session?.user;
 
   const SetNomeEvent = (e: SetStateAction<string>) => {
-    
     if (e !== "") {
       setFilterNome(e);
     }
@@ -36,7 +35,6 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
   };
 
   const SetAndamentoEvent = (e: SetStateAction<string>) => {
-   
     if (e !== "") {
       setFilterAndamento(e);
     }
@@ -48,7 +46,7 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
   const SetDataEvent = (e: SetStateAction<Date | string | any>) => {
     if (e) {
       setFilterData(e);
-    } 
+    }
     if (e === "") {
       setFilterData("");
     }
@@ -58,7 +56,7 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
     if (e !== 0) {
       setFilterEmpreendimento(Number(e));
     }
-    if ( e === 0) {
+    if (e === 0) {
       setFilterEmpreendimento(0);
     }
   };
@@ -74,13 +72,15 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
 
     onData(data);
   };
+  
+  console.log(FilterEmpreendimento);
 
   const HandleFilterBlank = () => {
     const data = {
-      nome: '',
-      andamento: '',
-      data: '',
-      empreendimento: '',
+      nome: "",
+      andamento: "",
+      data: "",
+      empreendimento: "",
     };
     setStatusData(true);
     setStatusAndamento(true);
@@ -113,23 +113,19 @@ export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
         />
       </Box>
       <Box w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-        {/* {user?.hierarquia !== "USER" && (
-          <EmpreendimentoFilter
-            onEmpreendimento={SetEmpreendimentoEvent}
-            setBlank={StatusEmpreendimento}
-          />
-        )} */}
-          <EmpreendimentoFilter
-            onEmpreendimento={SetEmpreendimentoEvent}
-            setBlank={StatusEmpreendimento}
-          />
+        <EmpreendimentoFilter
+          onEmpreendimento={SetEmpreendimentoEvent}
+          setBlank={StatusEmpreendimento}
+        />
       </Box>
 
-      <Flex w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-        <Box w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-          {/* <DateFilter onData={SetDataEvent} setBlank={StatusData} /> */}
-        </Box>
-      </Flex>
+      <Flex
+        w="full"
+        h="100%"
+        bg="#F8F8F8"
+        mr={{ base: "0", md: "10px" }}
+        p={1}
+      ></Flex>
       <Flex
         w="full"
         h="100%"
