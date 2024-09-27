@@ -1,17 +1,16 @@
 "use client";
 
-import { BotaoRetorno } from "@/app/componentes/btm_retorno";
+import BtmDistrato from "@/app/componentes/btm_distra";
 import {
+  Box,
   Button,
   ButtonGroup,
   Flex,
   IconButton,
   Modal,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
-  ModalHeader,
   ModalOverlay,
   Text,
   useDisclosure,
@@ -22,17 +21,22 @@ import { useRouter } from "next/navigation";
 import { MouseEvent } from "react";
 import { BsBoxArrowUpRight, BsFillTrashFill } from "react-icons/bs";
 import { IoIosArrowBack } from "react-icons/io";
+import revalidateSolicitacao from "./revalodate";
+
 
 interface BotoesFunctionProps {
   id: number;
-  onUpdate: any;
+  distrato: boolean;
+  exclude?: boolean;
 }
 
-export const BotoesFunction = ({ id, onUpdate }: BotoesFunctionProps) => {
+export const BotoesFunction = ({ id, distrato, exclude }: BotoesFunctionProps) => {
   const route = useRouter();
   const { data: session } = useSession();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+
 
   const HandleDelet = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -42,11 +46,9 @@ export const BotoesFunction = ({ id, onUpdate }: BotoesFunctionProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token: session?.token }),
       });
 
       if (res.ok) {
-        onUpdate(id);
         toast({
           title: "Solicitação deletada",
           description: "Solicitação deletada com sucesso",
@@ -54,6 +56,7 @@ export const BotoesFunction = ({ id, onUpdate }: BotoesFunctionProps) => {
           duration: 3000,
           isClosable: true,
         });
+        revalidateSolicitacao();
       }
     } catch (error) {
       toast({
@@ -65,22 +68,31 @@ export const BotoesFunction = ({ id, onUpdate }: BotoesFunctionProps) => {
       });
     }
   };
+
+  const HandleRedirect = () => {
+    window.open(`/solicitacoes/${id}`, "_blank");
+  }
+
   return (
-    <Flex w={"100%"} justifyContent={"start"} alignItems={"center"} gap={"5px"}>
+    <Flex justifyContent={"start"} alignItems={"center"} gap={"5px"}>
       <ButtonGroup variant="solid" size="sm" spacing={3}>
         <IconButton
           colorScheme="blue"
           icon={<BsBoxArrowUpRight />}
           aria-label="Up"
-          onClick={() => route.push(`/solicitacoes/${id}`)}
+          onClick={HandleRedirect}
         />
-        <IconButton
-          colorScheme="red"
-          variant="outline"
-          icon={<BsFillTrashFill />}
-          aria-label="Delete"
-          onClick={onOpen}
-        />
+        <Box hidden={exclude}>
+          <IconButton
+            colorScheme="red"
+            variant="outline"
+            icon={<BsFillTrashFill />}
+            aria-label="Delete"
+            onClick={onOpen}
+            _hover={{ bg: "red.300", color: "white", border: "none" }}
+          />
+        </Box>
+        <BtmDistrato id={id} distrato={distrato} exclude={exclude} />
       </ButtonGroup>
 
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -94,15 +106,21 @@ export const BotoesFunction = ({ id, onUpdate }: BotoesFunctionProps) => {
           </ModalBody>
 
           <ModalFooter>
-            <Button leftIcon={<IoIosArrowBack />} onClick={onClose} />
+            <Flex gap={3}>
+              <Button
+                colorScheme="blue"
+                leftIcon={<IoIosArrowBack />}
+                onClick={onClose}
+              />
 
-            <Button
-              leftIcon={<BsFillTrashFill />}
-              onClick={(e) => HandleDelet(e)}
-              colorScheme="red"
-            >
-              Confirmar Exclusão
-            </Button>
+              <Button
+                // leftIcon={<BsFillTrashFill />}
+                onClick={(e) => HandleDelet(e)}
+                colorScheme="red"
+              >
+                Confirmar Exclusão
+              </Button>
+            </Flex>
           </ModalFooter>
         </ModalContent>
       </Modal>

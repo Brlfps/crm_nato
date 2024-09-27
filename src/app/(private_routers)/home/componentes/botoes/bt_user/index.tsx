@@ -23,7 +23,7 @@ export default function BotaoUser() {
           size="md"
           textColor={"white"}
           variant={"link"}
-          onClick={() => router.push("/adm/cadastro")}
+          onClick={() => router.push("/usuarios")}
           aria-label={""}
         ></IconButton>
       </Box>

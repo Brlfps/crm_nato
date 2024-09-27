@@ -9,7 +9,8 @@ export async function GET(request: Request,{ params }: { params: { id: string } 
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/solicitacao/${id}`;
+
+    const url = `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/solicitacao/${id}`;
     const request = await fetch(url, {
       headers: {
         "Content-Type": "application/json",

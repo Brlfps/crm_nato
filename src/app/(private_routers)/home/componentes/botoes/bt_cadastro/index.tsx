@@ -23,7 +23,7 @@ export default function BotaoCadastro() {
           size="md"
           onClick={() => router.push("/register")}
         >
-          CADASTRAR USERS
+          CADASTRAR USUARIO
         </Button>
       </Box>
     </Flex>

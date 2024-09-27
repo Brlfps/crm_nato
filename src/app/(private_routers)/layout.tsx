@@ -1,35 +1,40 @@
-"use client";
-
+'use client';
 import { signOut, useSession } from "next-auth/react";
 import Loading from "../loading";
-import { Box, Flex } from "@chakra-ui/react";
-import { redirect, useRouter } from "next/navigation";
+import { Box } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 import BotaoJuncao from "./home/componentes/botoes/bt_juncao";
 import FooterComponent from "../componentes/footer";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { data: session } = useSession();
-  const user = session?.user;
-  const route = useRouter();
+  const { user } = session ?? {};
+  const router = useRouter();
 
-  if (!user)
+  const expiration = session ? session.expiration : 0;
+  const expired = Date.now() > expiration * 1000;
+
+  if (!user) {
     return (
       <>
         <Loading />
       </>
     );
-
-  (async () =>
-    await Promise.resolve(setTimeout((resolve: any) => resolve, 3000)))();
-  console.log(user);
-  if (!user) {
-    route.push("/login");
-    signOut({ redirect: false });
   }
+
+  if (expired) {
+    signOut({ redirect: false });
+    return router.push("/login");
+  }
+
   return (
-    <Box overflowY={"auto"} h={"100vh"} w={"100vw"} >
+    <Box overflowY={"auto"} h={"100dvh"} w={"100vw"}>
       <BotaoJuncao />
-      {user && children}
+      {children}
       <FooterComponent />
     </Box>
   );

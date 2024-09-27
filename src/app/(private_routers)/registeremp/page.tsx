@@ -32,7 +32,7 @@ export default function RegisterEmp() {
           alignItems="center" // Centraliza o conteúdo verticalmente em telas pequenas
         >
           <Box zIndex={1} position="initial" mb={{ base: 4, sm: 0 }}>
-            <BotaoRetorno />
+            <BotaoRetorno rota="/" />
           </Box>
           <Box width="100%">
             <Text

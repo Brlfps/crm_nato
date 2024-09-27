@@ -9,15 +9,14 @@ import {
   MenuList,
   useMediaQuery,
 } from "@chakra-ui/react";
-import BotaoCadastro from "../bt_cadastro";
 import BotaoNovaSolicita from "../bt_nvsolicita";
 import BotaoSair from "../bt_sair";
 import { useSession } from "next-auth/react";
-import { ModalFormComponent } from "@/app/componentes/modal";
 import { IoChevronDownCircleOutline } from "react-icons/io5";
 import BotaoPainelAdm from "../bt_paineladm";
 import BotaoUser from "../bt_user";
 import BotaoHome from "../bt_home";
+import BotaoPainelFinanceiro from "../bt_financeiro";
 
 export default function BotaoJuncao() {
   const { data: session } = useSession();
@@ -44,7 +43,14 @@ export default function BotaoJuncao() {
           <>
             <BotaoHome />
             <BotaoNovaSolicita />
-            {but === "ADM" && <BotaoPainelAdm />}
+            {but === "ADM" && (
+              <>
+                <BotaoPainelAdm />
+                <BotaoPainelFinanceiro />
+              </>
+            )}
+            {but === "CCA" && <BotaoPainelFinanceiro />}
+            {but === "CONT" && <BotaoPainelFinanceiro />}
           </>
         ) : (
           <Menu>
@@ -58,6 +64,16 @@ export default function BotaoJuncao() {
               {but === "ADM" && (
                 <MenuItem>
                   <BotaoPainelAdm />
+                </MenuItem>
+              )}
+              {but === "CCA" && (
+                <MenuItem>
+                  <BotaoPainelFinanceiro />
+                </MenuItem>
+              )}
+              {but === "CONT" && (
+                <MenuItem>
+                  <BotaoPainelFinanceiro />
                 </MenuItem>
               )}
               <MenuItem>

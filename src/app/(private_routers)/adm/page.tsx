@@ -8,17 +8,12 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Stack,
   Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
 import Aprovacao from "./_components/aprovacao";
 import { BotaoRetorno } from "@/app/componentes/btm_retorno";
 import BotaoCadastro from "../home/componentes/botoes/bt_cadastro";
-import BotaoJuncao from "../home/componentes/botoes/bt_juncao";
-import BotaoNovaSolicita from "../home/componentes/botoes/bt_nvsolicita";
-import { ModalFormComponent } from "@/app/componentes/modal";
-import BotaoUser from "../home/componentes/botoes/bt_user";
 import BotaoCadastroemp from "../home/componentes/botoes/bt_cadastroemp";
 import BotaoCadastroconst from "../home/componentes/botoes/bt_cadastroconst";
 import { IoChevronDownCircleOutline } from "react-icons/io5";
@@ -48,7 +43,7 @@ export default function PainelAdministrativo() {
       >
         <Flex mb={8} justifyContent="center" alignItems="center">
           <Box zIndex={1} position="initial">
-            <BotaoRetorno />
+            <BotaoRetorno rota="/" />
           </Box>
           <Box ml={4}>
             <Text fontSize="32px" fontWeight="bold" color="#333333">

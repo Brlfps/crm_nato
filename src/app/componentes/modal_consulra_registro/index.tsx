@@ -20,22 +20,23 @@ import {
   InputGroup,
   InputLeftElement,
   Icon,
+  InputRightElement,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaIdCard } from "react-icons/fa";
+import { IoSearch } from "react-icons/io5";
 import { mask, unMask } from "remask";
+import { cpf as ChekCpf } from "cpf-cnpj-validator";
 
 
 interface CpfProps {
   onCpfChange: (cpf: string) => void;
+  setCpfChange: string | null;
 }
 
-const MotionBox = motion(Box);
-const MotionFlex = motion(Flex);
 
-export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
+export const ModalConsultaRegistro = ({ onCpfChange, setCpfChange }: CpfProps) => {
   const [CPF, setCPF] = useState("");
   const [CPFMask, setCPFMask] = useState("");
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -45,15 +46,17 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
   const router = useRouter(); // Inicializando o useRouter
 
   useEffect(() => {
-    onOpen();
+    if (!setCpfChange) {
+      onOpen();
+    }
   }, [onOpen]);
 
   const handleClose = () => {
-    onClose();
     router.push("/"); // Redirecionando para a página inicial
   };
 
   const handleSubmit = async () => {
+    const IsValdCpf = ChekCpf.isValid(CPF);
     if (!CPF) {
       toast({
         title: "Erro!",
@@ -70,6 +73,14 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
         duration: 3000,
         isClosable: true,
       });
+    } else if(!IsValdCpf) {
+      toast({
+        title: "Erro!",
+        description: "CPF inválido!",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     } else {
       try {
         const request = await fetch(`/api/consulta/cpf/${CPF}`, {
@@ -81,7 +92,6 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
 
         if (request.ok) {
           const response = await request.json();
-          console.log(response);
 
           if (response.exists) {
             setSolicitacoes(response.solicitacoes);
@@ -93,6 +103,7 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
               isClosable: true,
             });
           } else {
+            setSolicitacoes([]);
             toast({
               title: "CPF disponível.",
               description: "Você pode prosseguir com o cadastro.",
@@ -158,6 +169,7 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
               <InputLeftElement
                 pointerEvents="none"
                 children={<Icon as={FaIdCard} color="gray.400" />}
+                pt={3}
               />
               <Input
                 type="text"
@@ -169,7 +181,21 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
                   setCPFMask(masked);
                   setCPF(valorLimpo);
                 }}
-                onBlur={() => handleSubmit()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (CPF.length == 11) {
+                      handleSubmit();
+                    } else {
+                      toast({
+                        title: "Erro!",
+                        description: "Faltam caracteres no CPF! Por favor, digite o CPF corretamente.",
+                        status: "error",
+                        duration: 3000,
+                        isClosable: true,
+                      });
+                    }
+                  }
+                }}
                 placeholder="Digite o CPF"
                 focusBorderColor="teal.400"
                 bg="gray.50"
@@ -180,6 +206,12 @@ export const ModalConsultaRegistro = ({ onCpfChange }: CpfProps) => {
                 h={{ base: "12", md: "14" }}
                 maxW="full"
               />
+              <InputRightElement width="4.5rem" pt={4} pe={2}>
+                <Button colorScheme={"teal"} onClick={handleSubmit}
+                >
+                  <Icon as={IoSearch} boxSize={8} />
+                </Button>
+              </InputRightElement>
             </InputGroup>
           </Box>
           {solicitacoes.length > 0 && (

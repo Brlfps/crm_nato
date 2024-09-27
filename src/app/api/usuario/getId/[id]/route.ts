@@ -13,7 +13,7 @@ export async function GET( request: Request, { params }: { params: { id: string 
     }
 
     const reqest = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/user/${id}`,
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/user/get/${id}`,
       {
         method: "GET",
         headers: {

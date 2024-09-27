@@ -24,6 +24,7 @@ interface AlertProps {
   ID?: number;
   clientId?: number;
   DeleteAlertStatus?: boolean | null;
+  atualizar?: any;
 }
 
 export const AlertComponent = ({
@@ -33,6 +34,7 @@ export const AlertComponent = ({
   ID,
   DeleteAlertStatus,
   clientId,
+  atualizar,
 }: AlertProps) => {
   const toast = useToast();
   const route = useRouter();
@@ -51,7 +53,10 @@ export const AlertComponent = ({
         duration: 3000,
         isClosable: true,
       });
-      window.location.reload();
+      atualizar(1);
+      setTimeout(() => {
+        atualizar(0);
+      }, 100);
     }
   };
 

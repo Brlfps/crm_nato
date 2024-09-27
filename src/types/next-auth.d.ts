@@ -3,13 +3,11 @@ import 'next-auth';
 declare module 'next-auth' {
   interface Session {
     token: string;
-    expires: Date | string;
+    expiration: number;
     user: {
-      Financeira: any;
+      Financeira: Financeira[];
       id: number;
       name: string;
-      email: string;
-      cpf: string;
       construtora: construtora[];
       telefone: string;
       empreendimento: empreendimento[];
@@ -21,28 +19,18 @@ declare module 'next-auth' {
 
   interface construtora {
     id: number;
-    cnpj: string;
-    razaosocial: string;
-    responsavel: string;
-    email: string;
-    tel: string;
-    tipo: string;
-    colaboradores: string;
-    createdAt: Date | string;
-    updatedAt: Date | string;
+    fantasia: string;
+  
   }
 
   interface empreendimento {
     id: number;
     nome: string;
-    ativo: boolean;
-    createdAt: Date | string;
-    updatedAt: Date | string;
-    chave: string;
-    cidade: string;
-    uf: string;
-    dt_inicio: Date | string;
-    dt_fim: Date | string;
+  }
+
+  interface Financeira{
+    id: number;
+    fantasia: string;
   }
 }
 

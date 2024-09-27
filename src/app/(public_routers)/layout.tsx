@@ -8,6 +8,8 @@ export default function Layout({
   children: React.ReactNode,
 }) {
 
+  
+
   return (
     <Box bg={"#f3f3f3"}>
       {children}

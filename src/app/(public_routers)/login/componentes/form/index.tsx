@@ -6,7 +6,9 @@ import {
   FormControl,
   FormLabel,
   Button,
-  useToast
+  useToast,
+  Flex,
+  CircularProgress
 } from "@chakra-ui/react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -15,45 +17,35 @@ import { useState } from "react";
 export const FormLogin = () => {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
   const toast = useToast();
   const router = useRouter();
 
   const handlesubmit = async () => {
+    setLoading(true);
     const res: any = await signIn("credentials", {
       email: username,
       password: password,
       redirect: false
-    });
+    });   
     if (res.status !== 200) {
-    
-        const request = await fetch("/api/verificador", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: username,
-            password: password,
-          }),
-        });
-        
-        const response = await request.json();
-        console.log(response);
-
-        if (response.error) {
-          toast({
-            title: "Erro!",
-            description: response.mesage,
-            status: "error",
-            duration: 5000,
-          });
-        }
-     
+        setLoading(false);
+        toast({
+          title: "Erro!",
+          description: "Usuario ou senha inválidos",
+          status: "error",
+          duration: 5000,
+        });     
     } else {
-      router.replace("/home");
+      router.replace("/");
     }
   };
 
+  if (loading) {
+    return (<Flex w={"100%"} h={"100%"} justifyContent={"center"} alignItems={"center"}> 
+<CircularProgress size='10rem' p={10} isIndeterminate color='green.300' />
+    </Flex>);
+  }
   return (
     <>
       <FormControl>
@@ -64,6 +56,7 @@ export const FormLogin = () => {
           border={"1px solid #b8b8b8cc"}
           textTransform={"uppercase"}
           onChange={(e: any) => setUsername(e.target.value.toUpperCase())}
+          value={username}
         />
         <FormLabel> Senha</FormLabel>
         <SenhaComponent

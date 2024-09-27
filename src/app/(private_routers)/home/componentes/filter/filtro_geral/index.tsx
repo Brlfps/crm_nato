@@ -1,12 +1,8 @@
 "use client";
 
-import { Box, Button, Flex, Input } from "@chakra-ui/react";
-import { NomeFilter } from "../filtro_nome";
-import { DateFilter } from "../Filtro_data";
-import { AndamentoFilter } from "../filtro_andamento";
-import { SetStateAction, useEffect, useState } from "react";
+import { Box, Button, Flex, Input, Select } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { EmpreendimentoFilter } from "../filtro_empreend";
 
 interface FiltroGeralProps {
   onData: any;
@@ -15,124 +11,234 @@ interface FiltroGeralProps {
 export const FiltroComponent = ({ onData }: FiltroGeralProps) => {
   const [FilterNome, setFilterNome] = useState<string>("");
   const [FilterAndamento, setFilterAndamento] = useState<string>("");
-  const [FilterData, setFilterData] = useState<Date | string>("");
   const [FilterEmpreendimento, setFilterEmpreendimento] = useState<number>(0);
-  const [StatusNome, setStatusNome] = useState<boolean>(false);
-  const [StatusAndamento, setStatusAndamento] = useState<boolean>(false);
-  const [StatusData, setStatusData] = useState<boolean>(false);
-  const [StatusEmpreendimento, setStatusEmpreendimento] =
-    useState<boolean>(false);
+  const [FilterId, setFilterId] = useState<number>(0);
+  const [FilterConstrutora, setFilterConstrutora] = useState<number>(0);
+  const [FilterFinanceira, setFilterFinanceira] = useState<number>(0);
+  const [DataEmpreendimento, setDataEmpreendimento] = useState<any>([]);
+  const [DataConstrutora, setDataConstrutora] = useState<any>([]);
+  const [DataFinanceira, setDataFinanceira] = useState<any>([]);
+
   const { data: session } = useSession();
   const user = session?.user;
 
-  const SetNomeEvent = (e: SetStateAction<string>) => {
-    if (e !== "") {
-      setFilterNome(e);
-    }
-    if (e === "") {
-      setFilterNome("");
-    }
-  };
+  useEffect(() => {
+    if (user?.hierarquia === "ADM") {
+      (async () => {
+        const resq = await fetch(`/api/empreendimento/getall`);
+        const data = await resq.json();
+        setDataEmpreendimento(data);
+      })();
+      (async () => {
+        const resq = await fetch(`/api/construtora/getall`);
+        const data = await resq.json();
+        setDataConstrutora(data);
+      })();
+      (async () => {
+        const resq = await fetch(`/api/financeira/getall`);
+        const data = await resq.json();
+        setDataFinanceira(data);
+      })();
+    } else {
+      if (user){
+        if (user.construtora.length > 0) {
+          setDataConstrutora(user?.construtora);
+        }
 
-  const SetAndamentoEvent = (e: SetStateAction<string>) => {
-    if (e !== "") {
-      setFilterAndamento(e);
-    }
-    if (e === "") {
-      setFilterAndamento("");
-    }
-  };
+        if (user.construtora.length === 0 && user?.hierarquia === "CONST") {
+           (async () => {
+             const resq = await fetch(`/api/construtora/getall`);
+             const data = await resq.json();
+             setDataConstrutora(data);
+           })();
+        }
+        
+        if (user.empreendimento.length > 0) {
+          setDataEmpreendimento(user?.empreendimento);
+        }
 
-  const SetDataEvent = (e: SetStateAction<Date | string | any>) => {
-    if (e) {
-      setFilterData(e);
-    }
-    if (e === "") {
-      setFilterData("");
-    }
-  };
+        if (user.empreendimento.length === 0 && user?.hierarquia === "CONST") {
+          (async () => {
+            const resq = await fetch(`/api/empreendimento/getall`);
+            const data = await resq.json();
+            setDataEmpreendimento(data);
+          })();
+        }
 
-  const SetEmpreendimentoEvent = (e: SetStateAction<number>) => {
-    if (e !== 0) {
-      setFilterEmpreendimento(Number(e));
+        if (user.Financeira.length > 0) {
+          setDataFinanceira(user?.Financeira);
+        }
+
+        if (user.Financeira.length === 0 && user?.hierarquia === "CONST") {
+           (async () => {
+             const resq = await fetch(`/api/financeira/getall`);
+             const data = await resq.json();
+             setDataFinanceira(data);
+           })();
+        }
+      }
     }
-    if (e === 0) {
-      setFilterEmpreendimento(0);
-    }
-  };
+  }, [user]);
 
   const HandleFilter = () => {
-    console.log(FilterData);
     const data = {
+      id: FilterId,
       nome: FilterNome,
       andamento: FilterAndamento,
-      data: FilterData,
       empreendimento: FilterEmpreendimento,
+      construtora: FilterConstrutora,
+      financeira: FilterFinanceira,
     };
 
     onData(data);
   };
-  
-  console.log(FilterEmpreendimento);
 
-  const HandleFilterBlank = () => {
+  const HandleFilterBlank = (e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setFilterId(0);
+    setFilterNome("");
+    setFilterAndamento("");
+    setFilterEmpreendimento(0);
+    setFilterConstrutora(0);
+    setFilterFinanceira(0);
+
     const data = {
+      id: 0,
       nome: "",
       andamento: "",
-      data: "",
-      empreendimento: "",
+      empreendimento: 0,
+      construtora: 0,
+      financeira: 0,
     };
-    setStatusData(true);
-    setStatusAndamento(true);
-    setStatusNome(true);
-    setStatusEmpreendimento(true);
-    setTimeout(() => {
-      setStatusData(false);
-      setStatusAndamento(false);
-      setStatusNome(false);
-      setStatusEmpreendimento(false);
-    }, 50);
-
     onData(data);
   };
 
   return (
     <Flex
       w="100%"
-      justifyContent="start"
-      alignItems="center"
+      justifyContent={{ base: "flex-start", md: "space-between" }}
       flexDirection={{ base: "column", md: "row" }} // Ajusta a direção da flexbox para diferentes tamanhos de tela
     >
-      <Box w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-        <NomeFilter onNome={SetNomeEvent} setBlank={StatusNome} />
-      </Box>
-      <Box w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-        <AndamentoFilter
-          onAndamento={SetAndamentoEvent}
-          setBlank={StatusAndamento}
-        />
-      </Box>
-      <Box w="full" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
-        <EmpreendimentoFilter
-          onEmpreendimento={SetEmpreendimentoEvent}
-          setBlank={StatusEmpreendimento}
+      <Box w="125rem" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Input
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="Nome"
+          size="sm"
+          borderRadius="1rem"
+          type="text"
+          value={FilterNome}
+          onChange={(e) => {
+            setFilterNome(e.target.value);
+          }}
         />
       </Box>
 
-      <Flex
-        w="full"
-        h="100%"
-        bg="#F8F8F8"
-        mr={{ base: "0", md: "10px" }}
-        p={1}
-      ></Flex>
-      <Flex
-        w="full"
-        h="100%"
-        bg="#F8F8F8"
-        gap={"1rem"}
-        mr={{ base: "0", md: "10px" }}
-      >
+      <Box w="70%" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Input
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="id"
+          size="sm"
+          borderRadius="1rem"
+          type="text"
+          value={FilterId === 0 ? "" : FilterId}
+          onChange={(e) => {
+            setFilterId(Number(e.target.value.replace(/\D/g, "")));
+          }}
+          
+        />
+      </Box>
+
+      <Box w="70%" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Select
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="Andamento"
+          size="sm"
+          borderRadius="1rem"
+          value={FilterAndamento}
+          onChange={(e) => {
+            setFilterAndamento(e.target.value);
+          }}
+        >
+          <option value="VAZIO">VAZIO</option>
+          <option value="INICIADO">INICIADO</option>
+          <option value="APROVADO">APROVADO</option>
+          <option value="EMITIDO">EMITIDO</option>
+          <option value="REVOGADO">REVOGADO</option>
+        </Select>
+      </Box>
+
+      <Box w="70%" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Select
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="construtora"
+          size="sm"
+          borderRadius="1rem"
+          value={FilterConstrutora}
+          onChange={(e) => {
+            setFilterConstrutora(Number(e.target.value));
+          }}
+        >
+          {DataConstrutora.length > 0 &&
+            DataConstrutora.map((item: any) => (
+              <option key={item.id} value={item.id}>
+                {item.fantasia}
+              </option>
+            ))}
+        </Select>
+      </Box>
+
+      <Box w="85%" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Select
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="Empreendimento"
+          size="sm"
+          borderRadius="1rem"
+          value={FilterEmpreendimento}
+          onChange={(e) => {
+            setFilterEmpreendimento(Number(e.target.value));
+          }}
+        >
+          {DataEmpreendimento.length > 0 &&
+            DataEmpreendimento.map((item: any) => (
+              <option key={item.id} value={item.id}>
+                {item.nome}
+              </option>
+            ))}
+        </Select>
+      </Box>
+
+      <Box w="65%" h="100%" bg="#F8F8F8" mr={{ base: "0", md: "10px" }}>
+        <Select
+          textColor={"#00713D"}
+          _hover={{ borderColor: "#00613C" }}
+          borderColor={"#00713D"}
+          placeholder="financeira"
+          size="sm"
+          borderRadius="1rem"
+          value={FilterFinanceira}
+          onChange={(e) => {
+            setFilterFinanceira(Number(e.target.value));
+          }}
+        >
+          {DataFinanceira.length > 0 &&
+            DataFinanceira.map((item: any) => (
+              <option key={item.id} value={item.id}>
+                {item.fantasia}
+              </option>
+            ))}
+        </Select>
+      </Box>
+      <Flex w="full" h="100%" gap={"1rem"} ms={{ base: "0", md: "10px" }}>
         <Button
           bg="#00713D"
           w={{ base: "100%", md: "auto" }}

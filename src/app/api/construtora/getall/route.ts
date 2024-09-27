@@ -1,11 +1,13 @@
 import { auth } from "@/lib/auth_confg";
 import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const allParams  = searchParams.get("all");
     const session = await getServerSession(auth)
 
     if (!session) {
@@ -13,7 +15,7 @@ export async function GET() {
     }
 
     const reqest = await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresa`,
+      `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/empresa${allParams ? `?all=${allParams}` : ""}`,
       {
         method: "GET",
         headers: {

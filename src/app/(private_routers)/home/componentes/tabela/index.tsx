@@ -1,124 +1,266 @@
 "use client";
-import { Box, Flex, Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Table,
+  Tbody,
+  Td,
+  Tfoot,
+  Th,
+  Thead,
+  Tr,
+  Text,
+  Select,
+  IconButton,
+  Icon,
+  Tooltip,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverBody,
+  PopoverFooter,
+  Portal,
+  ButtonGroup,
+} from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { BotoesFunction } from "../botoes/bt_group_function";
+import { ImClock } from "react-icons/im";
+import { IoIosArrowForward } from "react-icons/io";
+import { FaFileSignature } from "react-icons/fa6";
+import { LuAlertTriangle } from "react-icons/lu";
 
 interface TabelaProps {
-  onDados: {
-    nome: string;
-    andamento: string;
-    data: string;
-    empreendimento: number;
-  };
+  ClientData: solictacao.SolicitacaoGetType[];
+  total: number | null;
+  AtualPage: number;
+  SetVewPage: (page: number) => any;
 }
 
-async function handleGetUpdate() {
-  const res = await fetch(`/api/solicitacao/getall`);
-  const data = await res.json();
-  return data;
-}
-
-export const Tabela = ({ onDados }: TabelaProps) => {
-  const [Data, setData] = useState<solictacao.SolicitacaoGetType[]>([]);
-  const [FilterData, setFilterData] = useState<any>([]);
+export function Tabela({
+  ClientData,
+  total,
+  AtualPage,
+  SetVewPage,
+}: TabelaProps) {
+  const [SelectPage, setSelectPage] = useState(1);
   const { data: session } = useSession();
   const user = session?.user;
-  const token = session?.token;
 
   useEffect(() => {
-    (async () => {
-      const data = await handleGetUpdate();
-      setData(data);
-    })();
-  }, [token]);
+    setSelectPage(AtualPage);
+  }, [AtualPage]);
 
-  const Update = async (id: number) => {
-    // const data = await handleGetUpdate();
-    // setData(data);
+  const downTimeInDays = (item: solictacao.SolicitacaoGetType) => {
+    if (!item || !item.createdAt) return null;
 
-    const newData = Data.filter((item: any) => {
-      return item.id !== id;
-    });
-    setData(newData);
+    if (item.distrato || !item.ativo) {
+      return null;
+    }
+
+    // console.log(item);
+
+    // Data de criação (createdAt) em UTC
+    const dtSolicitacao = new Date(item.createdAt).getTime();
+    // console.log(
+    //   "🚀 ~ downTimeInDays ~ new Date(item.createdAt):",
+    //   new Date(item.createdAt).toISOString()
+    // );
+
+    let dtAprovacao: number;
+
+    // Se temos data e hora de aprovação, combinamos ambas
+    if (item.dt_aprovacao && item.hr_aprovacao) {
+      // Separando a data e a hora
+      const dataAprovacao = item.dt_aprovacao.split("T")[0]; // Pegando apenas a parte da data
+      const horaAprovacao = item.hr_aprovacao.split("T")[1].split("Z")[0]; // Pegando apenas a parte da hora, removendo o "Z"
+
+      // Combinar data e hora em UTC
+      const dataHoraAprovacao = new Date(`${dataAprovacao}T${horaAprovacao}Z`); // Adicionando "Z" para garantir que seja UTC
+
+      // console.log(
+      //   "🚀 ~ downTimeInDays ~ dataHoraAprovacao:",
+      //   dataHoraAprovacao.toISOString()
+      // );
+
+      // Obter o timestamp
+      dtAprovacao = dataHoraAprovacao.getTime();
+    } else {
+      // Se não houver aprovação, consideramos o tempo atual
+      dtAprovacao = Date.now();
+    }
+
+    // Calcula a diferença entre as datas
+    let diffInMs = dtAprovacao - dtSolicitacao;
+    // console.log("🚀 ~ downTimeInDays ~ diffInMs:", diffInMs);
+
+    // Verificação se a diferença é negativa
+    if (diffInMs < 0) {
+      // Inverte os valores
+      diffInMs = dtSolicitacao - dtAprovacao;
+    }
+
+    // Converte a diferença de milissegundos para horas
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    // console.log("🚀 ~ downTimeInDays ~ diffInHours:", diffInHours);
+
+    // Se a diferença for menor que 48 horas, retorna em horas
+    if (diffInHours < 48) {
+      return `${Math.floor(diffInHours)} horas`;
+    }
+
+    // Caso contrário, retorna em dias
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} dias`;
   };
 
-  useEffect(() => {
-    const { nome, andamento, empreendimento } = onDados;
 
-    const Filter = Data.filter((item: solictacao.SolicitacaoGetType) => {
-      const itemDate = item.fcweb?.dt_agenda
-        ? new Date(item.fcweb.dt_agenda)
-        : null;
 
-      const matchNome = nome
-        ? item.nome.toLowerCase().includes(nome.toLowerCase())
-        : true;
-      const matchAndamento = andamento
-        ? item.fcweb?.andamento.toLowerCase().includes(andamento.toLowerCase())
-        : true;
+  const tabela = ClientData.map((item) => {
+    const ano = item.dt_agendamento?.split("-")[0];
+    const mes = item.dt_agendamento?.split("-")[1];
+    const diaBruto = item.dt_agendamento?.split("-")[2];
+    const dia = diaBruto?.split("T")[0];
 
-      console.log(item.empreedimento.id, empreendimento);
+    const dtAgenda = item.dt_agendamento ? `${dia}/${mes}/${ano}` : null;
 
-      const matchEmpreendimento = empreendimento
-        ? item.empreedimento?.id === empreendimento
-        : true;
+    const horaAgenda = item.hr_agendamento?.split("T")[1].split(".")[0];
+    const andamento = item.Andamento;
+    const statusPg = item.fcweb?.estatos_pgto;
+    const colors = !item.ativo
+      ? "red.400"
+      : item.distrato && user?.hierarquia === "ADM"
+      ? "gray.600"
+      : item.distrato && user?.hierarquia === "CONST"
+      ? "gray.600"
+      : item.distrato && user?.hierarquia === "GRT"
+      ? "gray.600"
+      : "transparent";
 
-      return matchNome && matchAndamento && matchEmpreendimento;
-    });
+    const fontColor =
+      colors === "red.400"
+        ? "white"
+        : colors === "gray.600"
+        ? "white"
+        : "black";
 
-    console.log(Filter);
-    setFilterData(Filter);
-  }, [Data, onDados]);
+    const regexAssinado = new RegExp("\\bAssinado\\b");
+    const AssDocAss = regexAssinado.test(item.ass_doc);
 
-  const tabela =
-    FilterData.length > 0 &&
-    FilterData.map((item: solictacao.SolicitacaoGetType) => {
-      console.log(item.fcweb);
-      const dtAgenda =
-        item &&
-        item.fcweb &&
-        item.fcweb.dt_agenda &&
-        (() => {
-          const originalDate = new Date(item.fcweb.dt_agenda);
+    const regexExpirado = new RegExp("\\bexpirado\\b");
+    const AssDocExp = regexExpirado.test(item.ass_doc);
 
-          const saoPauloOffset = -3 * 60; // Em minutos (UTC-3)
+    return (
+      <Tr key={item.id} bg={colors} color={fontColor}>
+        <Td>
+          <Flex>
+            {item.tag.length > 0 &&
+            item.ativo &&
+            !item.distrato &&
+            item.Andamento !== "EMITIDO" ? (
+              <>
+                <ButtonGroup variant="solid" size="sm" me={2}>
+                  <Popover>
+                    <PopoverTrigger>
+                      <IconButton
+                        variant={"outline"}
+                        color={"red"}
+                        icon={<LuAlertTriangle style={{ fontWeight: "900" }} />}
+                        aria-label={"Alert"}
+                        fontSize={"1.7rem"}
+                        fontWeight={"900"}
+                        _hover={{ bg: "red", color: "white" }}
+                        border={"none"}
+                      />
+                    </PopoverTrigger>
+                    <Portal>
+                      <PopoverContent>
+                        <PopoverArrow />
+                        <PopoverHeader>Atenção</PopoverHeader>
+                        <PopoverCloseButton />
+                        <PopoverBody>
+                          {item.tag.map((item) => item.descricao).join(",\n")}
+                        </PopoverBody>
+                        <PopoverFooter></PopoverFooter>
+                      </PopoverContent>
+                    </Portal>
+                  </Popover>
+                </ButtonGroup>
+              </>
+            ) : (
+              <Box ms={10}></Box>
+            )}
+            <BotoesFunction
+              id={item.id}
+              distrato={item.distrato ? true : false}
+              exclude={!item.ativo ? true : false}
+            />
+          </Flex>
+        </Td>
+        <Td>{item.id}</Td>
+        <Td>{item.nome}</Td>
+        <Td>
+          <Box>{dtAgenda}</Box>
+          <Box>{horaAgenda}</Box>
+          <Box>{item.type_validacao}</Box>
+        </Td>
+        <Td>{andamento}</Td>
+        <Td>{item.ativo && downTimeInDays(item)}</Td>
+        <Td textAlign={"center"}>
+          {AssDocAss && item.ativo && !item.distrato && (
+            <Icon
+              as={FaFileSignature}
+              color={"green.500"}
+              fontSize={"1.75rem"}
+            />
+          )}
+          {AssDocExp && item.ativo && !item.distrato && (
+            <Icon as={FaFileSignature} color={"red.500"} fontSize={"1.75rem"} />
+          )}
+          {!AssDocAss &&
+            !AssDocExp &&
+            item.ativo &&
+            !item.distrato &&
+            item.link_doc && (
+              <Icon
+                as={FaFileSignature}
+                color={"gray.300"}
+                fontSize={"1.75rem"}
+              />
+            )}
+        </Td>
+        {user?.hierarquia === "ADM" && (
+          <>
+            <Td>{statusPg}</Td>
+            <Td>{item.fcweb?.valorcd}</Td>
+          </>
+        )}
+        {user?.hierarquia === "CONT" && (
+          <>
+            <Td>{statusPg}</Td>
+            <Td>{item.fcweb?.valorcd}</Td>
+          </>
+        )}
+      </Tr>
+    );
+  });
 
-          const currentOffset = originalDate.getTimezoneOffset(); // Em minutos
-
-          const adjustedDate = new Date(
-            originalDate.getTime() + (currentOffset - saoPauloOffset) * 60000
-          );
-
-          return new Intl.DateTimeFormat("pt-BR", {
-            dateStyle: "short",
-          }).format(adjustedDate);
-        })();
-
-      const TypeValid = item.fcweb && item.fcweb.validacao;
-      const HoraAgenda = item.fcweb?.hr_agenda?.split("T")[1].split(".")[0];
-      const andamento = item.fcweb && item.fcweb.andamento;
-      const statusPg = item.fcweb && item.fcweb.estatos_pgto;
-      const colors = item.ativo ? "transparent" : "red.400";
-      return (
-        <Tr key={item.id} bg={colors}>
-          <Td>
-            <BotoesFunction id={item.id} onUpdate={Update} />
-          </Td>
-          {user?.hierarquia === "ADM" && <Td>{item.id}</Td>}
-          <Td>{item.nome}</Td>
-          <Td>
-            <Box>{dtAgenda}</Box>
-            <Box>{HoraAgenda}</Box>
-            <Box>{TypeValid}</Box>
-          </Td>
-          <Td>{andamento}</Td>
-          {/* <Td>{item.ass_doc && item.ass_doc}</Td> */}
-          {user?.hierarquia !== "USER" && <Td>{statusPg}</Td>}
-          {user?.hierarquia !== "USER" && <Td>{item.fcweb?.valorcd}</Td>}
-        </Tr>
+  const OptionsSelect = () => {
+    if (!total || !ClientData.length) return null; // Verifica se total e ClientData.length existem
+    const TotalPages = Math.ceil(total / ClientData.length);
+    const options = [];
+    for (let i = 1; i <= TotalPages; i++) {
+      options.push(
+        <option key={i} value={i}>
+          {i}
+        </option>
       );
-    });
+    }
+    return options;
+  };
 
   return (
     <>
@@ -131,25 +273,70 @@ export const Tabela = ({ onDados }: TabelaProps) => {
           p={{ base: "10px", md: "20px" }}
           alignContent={"center"}
           justifyContent={"space-evenly"}
+          flexDir={"column"}
           overflowX={{ base: "auto", md: "hidden" }}
         >
           <Table variant="simple" size="sm">
             <Thead>
               <Tr>
                 <Th>FUNÇÕES</Th>
-                {user?.hierarquia === "ADM" && <Th>ID</Th>}
+                <Th>ID</Th>
                 <Th>NOME</Th>
                 <Th>AGENDAMENTO</Th>
                 <Th>CERTIFICADO</Th>
-                {/* <Th>CCA</Th> */}
-                {user?.hierarquia !== "USER" && <Th>STATUS PGMNT</Th>}
-                {user?.hierarquia !== "USER" && <Th>VALOR</Th>}
+                <Th fontSize={"20px"}>
+                  <ImClock />
+                </Th>
+                <Th>ASSINATURA</Th>
+                {user?.hierarquia === "CONT" && (
+                  <>
+                    <Th>STATUS PG</Th>
+                    <Th>VALOR</Th>
+                  </>
+                )}
+                {user?.hierarquia === "ADM" && (
+                  <>
+                    <Th>STATUS PG</Th>
+                    <Th>VALOR</Th>
+                  </>
+                )}
               </Tr>
             </Thead>
-            <Tbody>{FilterData.length > 0 && tabela}</Tbody>
+            <Tbody>{tabela}</Tbody>
           </Table>
+          <Flex
+            w={"full"}
+            justifyContent={"space-between"}
+            alignItems={"center"}
+            pt={3}
+          >
+            <Box>
+              Total de registros: {total} / {ClientData.length}
+            </Box>
+            <Flex gap={2}>
+              paginas:
+              <Select
+                size={"xs"}
+                borderRadius={"5px"}
+                value={SelectPage}
+                name="SelectedPage"
+                onChange={(e) => {
+                  setSelectPage(Number(e.target.value));
+                }}
+              >
+                <OptionsSelect />
+              </Select>
+              <IconButton
+                icon={<IoIosArrowForward />}
+                size={"xs"}
+                colorScheme="green"
+                aria-label={""}
+                onClick={() => SetVewPage(SelectPage)}
+              />
+            </Flex>
+          </Flex>
         </Flex>
       )}
     </>
   );
-};
+}
