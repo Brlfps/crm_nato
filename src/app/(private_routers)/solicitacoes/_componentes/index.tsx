@@ -10,8 +10,6 @@ import {
   Icon,
   Input,
   InputGroup,
-  InputLeftAddon,
-  InputRightElement,
   chakra,
   Select,
   SimpleGrid,
@@ -19,11 +17,13 @@ import {
   Tooltip,
   useToast,
   Flex,
+  Switch,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, useEffect, useState } from "react";
-import CheckEmail from "@/app/componentes/checkEmail";
+import { useEffect, useState } from "react";
 import { Whatsapp } from "@/app/componentes/whatsapp";
 import { SelectCorretor } from "@/app/componentes/select_user";
 import Loading from "@/app/loading";
@@ -48,68 +48,98 @@ export default function SolicitacaoForm({
   const [empreendimento, setempreendimento] = useState(0);
   const [CorretorId, setCorretorId] = useState(0);
   const [email, setemail] = useState("");
-  const [uploadCnh, setCnhFile] = useState<string>("");
-  const [uploadRg, setRgFile] = useState<string>("");
+  const [UploadCnhUrl, setUploadCnhUrl] = useState<string>("");
+  const [UploadRgUrl, setUploadRgUrl] = useState<string>("");
   const [relacionamento, setrelacionamento] = useState<string>("nao");
   const [Voucher, setVoucher] = useState<string>("");
   const [tel, setTel] = useState<string>("");
   const [teldois, SetTeldois] = useState<string>("");
-  const [teste, setTeste] = useState<any>([]);
   const [DataNascimento, setDataNascimento] = useState<Date | string | any>();
   const [Load, setLoad] = useState<boolean>(false);
-  const [checkEmailString, setcheckEmailString] = useState<string>("");
-  const [codigo, setcodigo] = useState<boolean>(false);
   const [Whatappdois, setWhatappdois] = useState<string>("");
+  const [VendedorName, setVendedorName] = useState<string>("");
+  const [Sms, setSms] = useState<boolean>(true);
   const toast = useToast();
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;
 
   const handlesubmit = async () => {
-    if (!codigo) {
+     if (
+      !nome ||
+      !cpf ||
+      !email ||
+      !tel ||
+      ConstrutoraID === 0 ||
+      empreendimento === 0 ||
+      FinanceiraID === 0 ||
+      !email ||
+      !DataNascimento
+    ) {
+      const capos = [];
+      if (!nome) {
+        capos.push("Nome");
+      }
+      if (!cpf) {
+        capos.push("CPF");
+      }
+      if (!email) {
+        capos.push("Email");
+      }
+      if (!tel) {
+        capos.push("Telefone");
+      }
+      if (ConstrutoraID === 0) {
+        capos.push("Construtora");
+      }
+      if (empreendimento === 0) {
+        capos.push("Empreendimento");
+      }
+      if (FinanceiraID === 0) {
+        capos.push("Financeira");
+      }
+      if (!DataNascimento) {
+        capos.push("Data de Nascimento");
+      }
       toast({
-        title: "Erro",
-        description: "Falha na verificação de Email",
+        title: "Preencha todos os campos",
+        description: "os seguintes campos não foram preenchidos:" + capos.join(", "),
         status: "error",
-        duration: 3000,
+        duration: 15000,
         isClosable: true,
-      });
-    } else if (!nome || !cpf || !email || !relacionamento) {
-      toast({
-        title: "Erro",
-        description: "Preencha todos os campos",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
+        position: "top-right",
       });
     } else {
       const data: solictacao.SolicitacaoPost = {
-        nome: nome,
-        telefone: tel,
-        cpf: cpf,
-        telefone2: teldois,
-        email: email,
-        uploadRg: uploadRg,
-        uploadCnh: uploadCnh,
+        nome: nome.toUpperCase(),
+        telefone: tel.replace(/\W+/g, ""),
+        cpf: cpf.replace(/\W+/g, ""),
+        telefone2: teldois.replace(/\W+/g, ""),
+        email: email.replace(/\s+/g, "").toLowerCase(),
+        uploadRg: UploadRgUrl,
+        uploadCnh: UploadCnhUrl,
         corretor: user?.hierarquia === "ADM" ? CorretorId : Number(user?.id),
         construtora: Number(ConstrutoraID),
         empreedimento: Number(empreendimento),
         dt_nascimento: DataNascimento,
-        relacionamento: cpfdois ? [cpfdois] : [],
+        relacionamento: cpfdois && relacionamento === "sim" ? [cpfdois] : [],
         rela_quest: relacionamento === "sim" ? true : false,
         voucher: Voucher,
-        Financeira: Number(FinanceiraID),
+        financeiro: Number(FinanceiraID),
       };
 
       try {
         setLoad(true);
-        const response = await fetch("/api/solicitacao", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+        const response = await fetch(
+          `/api/solicitacao?sms=${Sms}&vendedor=${VendedorName}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        );
         if (response.ok) {
           toast({
             title: "Sucesso",
@@ -120,8 +150,26 @@ export default function SolicitacaoForm({
           });
           setLoad(false);
           router.push("/home");
+        } else {
+          toast({
+            title: "Erro",
+            description: "Erro ao enviar solicitacao",
+            status: "error",
+            duration: 3000,
+            isClosable: true,
+          });
+          setLoad(false);
         }
-      } catch (error) {}
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao enviar solicitacao",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+        setLoad(false);
+      }
     }
   };
 
@@ -137,30 +185,6 @@ export default function SolicitacaoForm({
     setFinanceiraID(user.Financeira[0].id);
   }
 
-  const VerificadorEmail = (e: any) => {
-    const value = e.target.value;
-    if ("NT-" + value == checkEmailString) {
-      setcodigo(true);
-      toast({
-        title: "Sucesso",
-        description: "Email verificado com sucesso",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } else {
-      setcheckEmailString(value);
-      setcodigo(false);
-      toast({
-        title: "Erro",
-        description: "Falha na verificação de Email",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
-
   const handleCpfChange = (cpf: string) => {
     setCpf(cpf);
   };
@@ -168,42 +192,72 @@ export default function SolicitacaoForm({
   useEffect(() => {
     if (
       relacionamento === "sim" &&
-      cpfdois.length === 11 &&
-      nome &&
-      cpf &&
-      email &&
-      tel &&
-      DataNascimento
+      cpfdois.length === 11
     ) {
-      if (!codigo) {
-        toast({
-          title: "Erro",
-          description: "Falha na verificação de Email",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
-      } else {
+         if (
+      !nome ||
+      !cpf ||
+      !email ||
+      !tel ||
+      ConstrutoraID === 0 ||
+      empreendimento === 0 ||
+      FinanceiraID === 0 ||
+      !email ||
+      !DataNascimento
+    ) {
+      const capos = [];
+      if (!nome) {
+        capos.push("Nome");
+      }
+      if (!cpf) {
+        capos.push("CPF");
+      }
+      if (!email) {
+        capos.push("Email");
+      }
+      if (!tel) {
+        capos.push("Telefone");
+      }
+      if (ConstrutoraID === 0) {
+        capos.push("Construtora");
+      }
+      if (empreendimento === 0) {
+        capos.push("Empreendimento");
+      }
+      if (FinanceiraID === 0) {
+        capos.push("Financeira");
+      }
+      if (!DataNascimento) {
+        capos.push("Data de Nascimento");
+      }
+      toast({
+        title: "Preencha todos os campos",
+        description: "os seguintes campos não foram preenchidos:" + capos.join(", "),
+        status: "error",
+        duration: 15000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }  else {
         ishidden("sim");
-
         const data: solictacao.SolicitacaoPost = {
-          nome: nome,
-          cpf: cpf,
-          telefone: tel,
+          nome: nome.toUpperCase(),
+          cpf: cpf.replace(/\W+/g, ""),
+          telefone: tel.replace(/\W+/g, ""),
           telefone2: teldois,
           dt_nascimento: DataNascimento,
-          email: email,
-          uploadRg: uploadRg,
-          uploadCnh: uploadCnh,
+          email: email.replace(/\s+/g, "").toLowerCase(),
+          uploadRg: UploadRgUrl,
+          uploadCnh: UploadCnhUrl,
           corretor: user?.hierarquia === "ADM" ? CorretorId : Number(user?.id),
           relacionamento: [cpfdois],
           cpfdois: cpfdois,
           construtora: Number(ConstrutoraID),
           empreedimento: Number(empreendimento),
-          Financeira: Number(FinanceiraID),
-
+          financeiro: Number(FinanceiraID),
           rela_quest: relacionamento === "sim" ? true : false,
           voucher: Voucher,
+          vendedorName: VendedorName,
         };
         onvalue(data);
       }
@@ -217,7 +271,6 @@ export default function SolicitacaoForm({
     CorretorId,
     DataNascimento,
     Voucher,
-    codigo,
     cpf,
     cpfdois,
     email,
@@ -229,12 +282,9 @@ export default function SolicitacaoForm({
     tel,
     teldois,
     toast,
-    uploadCnh,
-    uploadRg,
     user?.hierarquia,
     user?.id,
   ]);
-  console.log("teste", user);
 
   if (Load) {
     return <Loading />;
@@ -246,6 +296,13 @@ export default function SolicitacaoForm({
     const masked = mask(valorLinpo, ["(99) 9999-9999", "(99) 9 9999-9999"]);
     SetTeldois(unMask(masked));
     setWhatappdois(masked);
+  };
+
+  const handleFileUploadedRg = (result: any) => {
+    setUploadRgUrl(result.url);
+  };
+  const handleFileUploadedCnh = (result: any) => {
+    setUploadCnhUrl(result.url);
   };
 
   return (
@@ -264,11 +321,15 @@ export default function SolicitacaoForm({
               </chakra.p>
             </Flex>
           </FormLabel>
-          <Input type="text" onChange={(e) => setnome(e.target.value)} />
+          <Input
+            type="text"
+            onChange={(e) => setnome(e.target.value.toUpperCase())}
+            value={nome}
+          />
         </Box>
       </SimpleGrid>
 
-      <ModalConsultaRegistro onCpfChange={handleCpfChange} />
+      <ModalConsultaRegistro setCpfChange={cpf} onCpfChange={handleCpfChange} />
 
       <SimpleGrid
         columns={{ base: 1, md: 2, lg: 3 }}
@@ -288,6 +349,7 @@ export default function SolicitacaoForm({
           <Input
             type="date"
             onChange={(e) => setDataNascimento(e.target.value)}
+            value={DataNascimento}
           />
         </GridItem>
         <GridItem>
@@ -308,12 +370,12 @@ export default function SolicitacaoForm({
       </SimpleGrid>
 
       <SimpleGrid
-        columns={{ base: 1, md: 2, lg: 3 }}
+        columns={{ base: 1, md: 2, lg: 2 }}
         spacing={6}
         mt={6}
         alignItems={"end"}
       >
-        <GridItem colSpan={{ base: 1, md: 1, lg: 2 }}>
+        <GridItem colSpan={{ base: 1, md: 1, lg: 1 }}>
           <FormLabel>
             <Flex alignItems={"flex-start"}>
               Email{" "}
@@ -326,28 +388,14 @@ export default function SolicitacaoForm({
             <Input
               type="text"
               border="1px solid #b8b8b8cc"
-              onChange={(e: any) => setemail(e.target.value)}
-            />
-            <InputRightElement width="8rem">
-              <CheckEmail
-                onvalue={(e: any) => setcheckEmailString(e)}
-                email={email}
-                nome={nome}
-              />
-            </InputRightElement>
-          </InputGroup>
-        </GridItem>
-        <GridItem>
-          <FormLabel>Codigo email</FormLabel>
-          <InputGroup>
-            <InputLeftAddon>NT-</InputLeftAddon>
-            <Input
-              type="text"
-              onChange={VerificadorEmail}
-              textTransform={"uppercase"}
+              onChange={(e: any) =>
+                setemail(e.target.value.replace(/\s+/g, "").toLowerCase())
+              }
+              value={email}
             />
           </InputGroup>
         </GridItem>
+        
       </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mt={6}>
@@ -358,10 +406,12 @@ export default function SolicitacaoForm({
               hierarquia={user.hierarquia}
               tag="construtora"
               SetValue={user.construtora.map((item: any) => ({
+
                 id: item.id,
-                nome: item.razaosocial,
+                nome: item.fantasia,
               }))}
               onValue={(e: any) => setConstrutoraID(e)}
+              DefaultValue={Number(ConstrutoraID)}
             />
           </Box>
         )}
@@ -373,6 +423,7 @@ export default function SolicitacaoForm({
               tag="Financeira"
               SetValue={user.Financeira}
               onValue={(e: any) => setFinanceiraID(e)}
+              DefaultValue={Number(FinanceiraID)}
             />
           </Box>
         )}
@@ -384,26 +435,59 @@ export default function SolicitacaoForm({
               tag="empreendimento"
               SetValue={user.empreendimento}
               onValue={(e: any) => setempreendimento(e)}
+              DefaultValue={Number(empreendimento)}
             />
           </Box>
         )}
         {user?.hierarquia === "ADM" && (
           <Box>
             <FormLabel>Corretor</FormLabel>
-            <SelectCorretor idcorretor={setCorretorId} />
+            <SelectCorretor
+              idcorretor={setCorretorId}
+              setCorretor={Number(CorretorId)}
+              Vendedor={setVendedorName}
+            />
           </Box>
         )}
+        {user?.hierarquia === "CONT" && (
+          <Box>
+            <FormLabel>Corretor</FormLabel>
+            <SelectCorretor
+              idcorretor={setCorretorId}
+              setCorretor={Number(CorretorId)}
+              Vendedor={setVendedorName}
+            />
+          </Box>
+        )}
+        {user?.hierarquia === "GRT" && (
+          <Box>
+            <FormLabel>Corretor</FormLabel>
+            <SelectCorretor
+              idcorretor={setCorretorId}
+              setCorretor={Number(CorretorId)}
+              Vendedor={setVendedorName}
+            />
+          </Box>
+        )}
+      </SimpleGrid>
+
+      <SimpleGrid columns={{ base: 1 }} spacing={6} mt={6}>
+        <Alert status="warning" variant="left-accent">
+          <AlertIcon />
+          Ao subir os arquivos, de preferencia a cnh exportado da app CNH
+          Digital ou foto da CNH totalmente aberta.
+        </Alert>
       </SimpleGrid>
 
       <SimpleGrid columns={{ base: 1, md: 2, lg: 2 }} spacing={6} mt={6}>
         <FormControl as={GridItem}>
           <FormLabel>CNH</FormLabel>
-          <VerificadorFileComponent onFileConverted={setCnhFile} />
+          <VerificadorFileComponent onFileUploaded={handleFileUploadedCnh} />
         </FormControl>
 
         <FormControl as={GridItem}>
           <FormLabel>RG</FormLabel>
-          <VerificadorFileComponent onFileConverted={setRgFile} />
+          <VerificadorFileComponent onFileUploaded={handleFileUploadedRg} />
         </FormControl>
       </SimpleGrid>
 
@@ -452,7 +536,25 @@ export default function SolicitacaoForm({
                 <Icon ml={1} color="black" cursor="pointer" boxSize={3} />
               </Tooltip>
             </FormLabel>
-            <Input type="text" onChange={(e) => setVoucher(e.target.value)} />
+            <Input
+              type="text"
+              onChange={(e) => setVoucher(e.target.value)}
+              value={Voucher}
+            />
+          </Box>
+        )}
+
+        {user?.hierarquia === "ADM" && relacionamento !== "sim" && (
+          <Box>
+            <FormLabel>Envio de SMS</FormLabel>
+            <Flex alignItems={"flex-start"}>
+              <Switch
+                colorScheme="green"
+                size="lg"
+                onChange={(e) => setSms(e.target.checked)}
+                isChecked={Sms}
+              />
+            </Flex>
           </Box>
         )}
       </SimpleGrid>

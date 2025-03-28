@@ -17,7 +17,7 @@ const CpfMask: React.FC<CpfMaskProps> = ({
 }) => {
   const [value, setValue] = useState("");
   const [isInvalid, setIsInvalid] = useState(false);
-  const [Disablee, setDesativado] = useState(false);
+  const [Disable, setDesativado] = useState(false);
   const toast = useToast(); // Hook para exibir toasts do Chakra UI
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const CpfMask: React.FC<CpfMaskProps> = ({
   return (
     <Box w="Full">
       <Input
-        disabled={Disablee}
+        disabled={Disable}
         type="text"
         border={"1px solid #b8b8b8cc"}
         onChange={(e) => handleMask(e.target.value)}

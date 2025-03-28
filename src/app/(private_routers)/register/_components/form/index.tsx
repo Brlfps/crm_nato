@@ -3,6 +3,8 @@
 import CheckEmail from "@/app/componentes/checkEmail";
 import CpfMask from "@/app/componentes/cpf_mask";
 import { ModalConsultaRegistro } from "@/app/componentes/modal_consulra_registro";
+import SelectMultFinanceiro from "@/app/componentes/select_mult_finaceiro";
+import SelectMultiEmpreendimento from "@/app/componentes/select_multi_empreendimento";
 import { SenhaComponent } from "@/app/componentes/Senha";
 import { Whatsapp } from "@/app/componentes/whatsapp";
 import {
@@ -29,17 +31,14 @@ export default function FormRegister() {
   const [tel, setTel] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [cpf, setCpf] = useState("");
-  const [Empreendimento, setEmpreendimento] = useState<number | undefined>();
-  const [EmpreendimentoData, setEmpreendimentoData] = useState<any>([]);
+  const [cpfNask, setCpfNask] = useState("");
+  const [Empreendimento, setEmpreendimento] = useState<any>([]);
   const [Construtora, setConstrutora] = useState<number | undefined>();
   const [ConstrutoraData, setConstrutoraData] = useState<any>([]);
-  const [DataNascimento, setDataNascimento] = useState<Date | string | any>();
+  const [Financeiro, setFinanceiro] = useState<any>([]);
   const [Cargo, setCargo] = useState("");
   const [Hierarquia, setHierarquia] = useState("");
   const [Email, setEmail] = useState("");
-  const [Load, setLoad] = useState<boolean>(false);
-  const [checkEmail, setcheckEmail] = useState<string>("");
-  const [codigo, setcodigo] = useState<boolean>(false);
   const [Nome, setNome] = useState("");
   const toast = useToast();
   const route = useRouter();
@@ -58,10 +57,9 @@ export default function FormRegister() {
       !username ||
       !Email ||
       !Nome ||
-      // !Empreendimento ||
-      // !Construtora ||
       !password ||
-      !confirmPassword
+      !confirmPassword ||
+      Financeiro.length === 0 
     ) {
       toast({
         title: "Erro",
@@ -88,10 +86,11 @@ export default function FormRegister() {
         nome: Nome,
         cargo: Cargo,
         construtora: Construtora ? [Number(Construtora)] : [],
-        empreendimento: Empreendimento ? [Number(Empreendimento)] : [],
+        empreendimento: Empreendimento ? Empreendimento : [],
         hierarquia: Hierarquia,
-        obs: "",
+        Financeira: Financeiro,
       };
+
       try {
         const response = await fetch("/api/register", {
           method: "POST",
@@ -100,15 +99,17 @@ export default function FormRegister() {
           },
           body: JSON.stringify(data),
         });
-        const dados = await response.json();
-        toast({
-          title: "Sucesso",
-          description: "Cadastrado com sucesso",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-        });
-        route.back();
+
+        if (response.ok) {
+          toast({
+            title: "Sucesso",
+            description: "Cadastrado com sucesso",
+            status: "success",
+            duration: 3000,
+            isClosable: true,
+          });
+          route.back();
+        }
       } catch (error: any) {
         toast({
           title: "Erro ao cadastrar",
@@ -121,27 +122,18 @@ export default function FormRegister() {
     }
   };
 
-  const VerificadorEmail = (e: any) => {
-    const value = e.target.value;
-    if ("NT-" + value === checkEmail) {
-      setcheckEmail("");
-      setcodigo(true);
-    } else {
-      setcheckEmail(value);
-      setcodigo(false);
-    }
-  };
 
   const GetConstrutora = (e: any) => {
     const value = e.target.value;
-    (async () => {
-      const response = await fetch(
-        `/api/empreendimento/getall/filter/${Number(value)}`
-      );
-      const data = await response.json();
-      setEmpreendimentoData(data);
-    })();
     setConstrutora(Number(value));
+  };
+
+  const MaskCpf = (e: any) => {
+   const value = e.target.value;
+   const limpo = unMask(value);
+   const masked = mask(limpo, ["999.999.999-99"]);
+   setCpfNask(masked);
+   setCpf(limpo);
   };
 
   return (
@@ -162,11 +154,7 @@ export default function FormRegister() {
         </GridItem>
         <GridItem>
           <FormLabel>CPF</FormLabel>
-          <Input
-            type="text"
-            border="1px solid #b8b8b8cc"
-            onChange={(e: any) => setCpf(e.target.value)}
-          />
+          <Input type="text" border="1px solid #b8b8b8cc" onChange={MaskCpf} value={cpfNask} />
         </GridItem>
       </SimpleGrid>
 
@@ -204,29 +192,10 @@ export default function FormRegister() {
               border="1px solid #b8b8b8cc"
               onChange={(e: any) => setEmail(e.target.value)}
             />
-            <InputRightElement width="8rem">
-              <CheckEmail onvalue={setcheckEmail} email={Email} nome={Nome} />
-            </InputRightElement>
           </InputGroup>
         </GridItem>
 
         <GridItem>
-          <FormLabel>Codigo email</FormLabel>
-          <InputGroup>
-            <InputLeftAddon>NT-</InputLeftAddon>
-            <Input type="text" onChange={VerificadorEmail} />
-          </InputGroup>
-        </GridItem>
-      </SimpleGrid>
-
-      <Box
-        mt={6}
-        display="flex"
-        flexDirection={{ base: "column", md: "row" }}
-        justifyContent="space-between"
-        w="full"
-      >
-        <Box w={{ base: "100%", md: "48%" }} mb={{ base: 4, md: 0 }}>
           <FormLabel>Construtora</FormLabel>
           <Select
             placeholder="Selecione uma construtora"
@@ -241,23 +210,28 @@ export default function FormRegister() {
                 </option>
               ))}
           </Select>
-        </Box>
+        </GridItem>
+      </SimpleGrid>
+
+      <Box
+        mt={6}
+        display="flex"
+        flexDirection={{ base: "column", md: "row" }}
+        justifyContent="space-between"
+        w="full"
+      >
         <Box w={{ base: "100%", md: "48%" }}>
-          <FormLabel>Empreendimento</FormLabel>
-          <Select
-            placeholder="Selecione uma construtora"
-            border="1px solid #b8b8b8cc"
-            isDisabled={!Construtora}
-            onChange={(e: any) => setEmpreendimento(e.target.value)}
-            value={Empreendimento}
-          >
-            {EmpreendimentoData.length > 0 &&
-              EmpreendimentoData.map((empreedimento: any) => (
-                <option key={empreedimento.id} value={empreedimento.id}>
-                  {empreedimento.nome}
-                </option>
-              ))}
-          </Select>
+          <SelectMultiEmpreendimento
+            ConstrutoraId={Construtora}
+            EmpreendimentoDisabled={!Construtora}
+            EmpreendimentoValue={setEmpreendimento}
+          />
+        </Box>
+        <Box w={{ base: "100%", md: "48%" }} mb={{ base: 4, md: 0 }}>
+          <SelectMultFinanceiro
+            FinanceDisabled={Empreendimento < 1}
+            FinanceiroValue={setFinanceiro}
+          />
         </Box>
       </Box>
 
@@ -291,7 +265,7 @@ export default function FormRegister() {
           >
             <option value="USER">Vendedor</option>
             <option value="CONST">Construtora</option>
-            <option value="CONST">Financeira</option>
+            <option value="CCA">CCA</option>
             <option value="ADM">Administrador</option>
           </Select>
         </Box>

@@ -26,15 +26,12 @@ export const auth: NextAuthOptions = {
           });
 
           const retorno = await res.json();
-          console.log("🚀 ~ authorize ~ retorno:", retorno)
-          const { token, expires, user } = retorno;
+          
+          const { token, user } = retorno;
 
           const {
             id,
-            username,
             nome,
-            email,
-            cpf,
             construtora,
             telefone,
             empreendimento,
@@ -48,20 +45,17 @@ export const auth: NextAuthOptions = {
             jwt: token,
             id: id,
             name: nome,
-            username: username,
-            email: email,
-            cpf: cpf,
             construtora: construtora,
             telefone: telefone,
             empreendimento: empreendimento,
             hierarquia: hierarquia,
             cargo: cargo,
-            tokenexpires: expires,
             reset_password: reset_password,
             Financeira: Financeira 
           };
+          console.log(response);
 
-          if (!token || !id || !username) {
+          if (!token || !id || !nome) {
             throw new Error("Usuário e senha incorreto");
             return null;
           }
@@ -80,12 +74,12 @@ export const auth: NextAuthOptions = {
     // newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   jwt: {
-    secret: process.env.NEXT_PUBLIC_JWT_SECRET || "secret"
+    secret: process.env.JWT_SIGNING_PRIVATE_KEY,
   },
-  secret: process.env.NEXT_PUBLIC_JWT_SECRET || "123456",
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 3 * 60 * 60 // 4 hours
+    maxAge: 3 * 60 * 60 // 3 hours
   },
   callbacks: {
     jwt: async ({
@@ -98,19 +92,17 @@ export const auth: NextAuthOptions = {
       const isSignIn = !!user;
 
       const actualDateInSeconds = Math.floor(Date.now() / 1000);
-      const tokenExpirationInSeconds = Math.floor(3 * 60 * 60); // 4 hours
+      const tokenExpirationInSeconds = 3 * 60 * 60; // 4 hours
+      const dateExpirationInSeconds = actualDateInSeconds + tokenExpirationInSeconds;
 
       if (isSignIn) {
-        if (!user?.jwt || !user?.id || !user?.name || !user?.email) {
+        if (!user?.jwt || !user?.id || !user?.name) {
           return null;
         }
 
         token.jwt = user.jwt;
         token.id = user.id;
         token.name = user.name;
-        token.username = user.username;
-        token.email = user.email;
-        token.cpf = user.cpf;
         token.construtora = user.construtora;
         token.telefone = user.telefone;
         token.empreendimento = user.empreendimento;
@@ -119,7 +111,7 @@ export const auth: NextAuthOptions = {
         token.reset_password = user.reset_password;
         token.Financeira = user.Financeira;
 
-        token.expiration = actualDateInSeconds + tokenExpirationInSeconds;
+        token.expiration = dateExpirationInSeconds;
       } else {
         if (!token?.expiration) {
           return null;
@@ -139,7 +131,6 @@ export const auth: NextAuthOptions = {
         !token?.jwt ||
         !token?.id ||
         !token?.name ||
-        !token?.email ||
         !token?.expiration
       ) {
         return null;
@@ -147,10 +138,7 @@ export const auth: NextAuthOptions = {
 
       session.user = {
         id: token.id as number,
-        username: token.username as string,
         name: token.name as string,
-        email: token.email as string,
-        cpf: token.cpf as string,
         construtora: token.construtora as any[],
         telefone: token.telefone as string,
         empreendimento: token.empreendimento as any[],
@@ -161,6 +149,7 @@ export const auth: NextAuthOptions = {
       };
 
       session.token = token.jwt as string;
+      session.expiration = token.expiration as number;
       return session;
     }
   }

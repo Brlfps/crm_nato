@@ -11,9 +11,10 @@ import {
 import SolicitacaoForm from "./_componentes";
 import { useState } from "react";
 import RelacionadoForm from "./_componentes/FormRelacionamento";
-import { IoIosArrowBack } from "react-icons/io";
 import { useRouter } from "next/navigation";
 import { BotaoRetorno } from "@/app/componentes/btm_retorno";
+import { Metadata } from "next";
+
 
 export default function Solicitacao() {
   const [onvalue, setOnvalue] = useState<any>();
@@ -63,7 +64,7 @@ export default function Solicitacao() {
           >
             <Flex>
               <Box zIndex={1} position="initial">
-                <BotaoRetorno />
+                <BotaoRetorno rota="/" />
               </Box>
               <Box w="100%">
                 <Text
@@ -102,3 +103,7 @@ export default function Solicitacao() {
     </Box>
   );
 }
+
+// export const metadata: Metadata = {
+//   title: "SOLICITAÇÕES",
+// };

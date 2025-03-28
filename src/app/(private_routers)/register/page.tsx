@@ -32,7 +32,7 @@ export default function Register() {
           alignItems="center" // Centraliza o conteúdo verticalmente em telas pequenas
         >
           <Box zIndex={1} position="initial" mb={{ base: 4, sm: 0 }}>
-            <BotaoRetorno />
+            <BotaoRetorno rota="/adm" />
           </Box>
           <Box width="100%">
             <Text
@@ -40,7 +40,7 @@ export default function Register() {
               fontSize={{ base: "24px", md: "32px" }} // Responsivo para diferentes tamanhos de texto
               color="#333333"
             >
-              Cadastro de Usuarios
+              Cadastro de Usuários
             </Text>
           </Box>
         </Flex>
@@ -48,6 +48,5 @@ export default function Register() {
         <FormRegister />
       </Box>
     </Flex>
-    
   );
 }

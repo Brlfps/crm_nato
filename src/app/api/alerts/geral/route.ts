@@ -17,14 +17,14 @@ export async function GET() {
       },
     });
     const data = await request.json();
-    console.log("🚀 ~ GET ~ data:", data)
+    
     if (!request.ok)
       return NextResponse.json(
         { message: "Solicitação não encontrada" },
         { status: 404 }
       );
 
-    const filterData = data.filter((alert: any) => alert.status === true);
+    const filterData = data.filter((alert: any) => alert.status === true).filter((alert: any) => alert.corretor === session?.user.id || alert.corretor === null);
 
     return NextResponse.json(filterData, { status: 200 });
   } catch (error) {
